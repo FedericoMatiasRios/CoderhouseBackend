@@ -1,4 +1,5 @@
 const fs = require('fs')
+
 class ProductManager {
     products
 
@@ -9,9 +10,10 @@ class ProductManager {
 
     async firstTime() {
         if (fs.existsSync(this.path)) {
-            console.log("exists")
+            // si el .json existe, copiar su valor
+            this.products = JSON.parse(await fs.promises.readFile(this.path, 'utf-8'))
         } else {
-            console.log("not exists")
+            // si no existe, crearlo
             await fs.promises.writeFile(this.path, JSON.stringify(this.products))
         }
     }
@@ -22,12 +24,12 @@ class ProductManager {
         if (exists) throw new Error('Code already exists');
 
         await this.products.push(new Product({title, description, price, thumbnail, code, stock}))
-        fs.promises.writeFile(this.path, JSON.stringify(this.products))
+        await fs.promises.writeFile(this.path, JSON.stringify(this.products))
     }
 
     async getProducts() {
         const get = await fs.promises.readFile(this.path, 'utf-8')
-        return get
+        console.log(get);
     }
 
     async getProductById(id) {
@@ -38,8 +40,37 @@ class ProductManager {
         if (found === undefined) {
             throw new Error('Not found')
         } else {
-            console.log("found")
             console.log(found)
+        }
+    }
+
+    async updateProduct(id, {title, description, price, thumbnail, code, stock}) {
+        const found = JSON.parse(await fs.promises.readFile(this.path, 'utf-8')).find(e => e.id == id)
+
+        if (found === undefined) {
+            throw new Error('Not found')
+        } else {
+            if (title !== undefined) {this.products[id-1].title = title;}
+            if (description !== undefined) {this.products[id-1].description = description;}
+            if (price !== undefined) {this.products[id-1].price = price;}
+            if (thumbnail !== undefined) {this.products[id-1].thumbnail = thumbnail;}
+            if (code !== undefined) {this.products[id-1].code = code;}
+            if (stock !== undefined) {this.products[id-1].stock = stock;}
+            console.log("Updated")
+        }
+        
+        await fs.promises.writeFile(this.path, JSON.stringify(this.products))        
+    }
+
+    async deleteProduct(id) {
+        const found = JSON.parse(await fs.promises.readFile(this.path, 'utf-8')).find(e => e.id == id)
+
+        if (found === undefined) {
+            throw new Error('Not found')
+        } else {
+            this.products.splice(id-1, 1)
+            await fs.promises.writeFile(this.path, JSON.stringify(this.products))
+            console.log("Deleted")
         }
     }
 }
@@ -78,22 +109,24 @@ class Product {
 
 const productManager = new ProductManager('./products.json')
 
-productManager.firstTime().then(
-    productManager.getProducts().then(products => console.log('getProducts: ', products)).then(
-        productManager.addProduct({title: "producto prueba", description: "Este es un producto prueba", price: 200, thumbnail: "Sin imagen", code: "abc123", stock: 25}).then(
-            productManager.getProducts().then(products => console.log('getProducts: ', products)).then(
-                productManager.getProductById(1)
-            )
-        )
-    )
-)
+async function runTest() {
+    await productManager.firstTime()
+    await productManager.getProducts()
+    await productManager.addProduct({title: "producto prueba", description: "Este es un producto prueba", price: 200, thumbnail: "Sin imagen", code: "abc123", stock: 25})
+    await productManager.getProducts()
+    await productManager.getProductById(1)
+    await productManager.updateProduct(1, {title: "updated"})
+    await productManager.getProductById(1)
+    await productManager.deleteProduct(1)
+    await productManager.getProducts()
+  }
 
-
-
+runTest()
 
 //Error: Code already exists
 //productManager.addProduct({title: "producto prueba", description: "Este es un producto prueba", price: 200, thumbnail: "Sin imagen", code: "abc123", stock: 25})
 
+// productManager.getProductById(1)
 
 //Error: Not found
 //productManager.getProductById(2)
