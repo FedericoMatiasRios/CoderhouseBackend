@@ -1,6 +1,6 @@
-const fs = require('fs')
+import fs from 'fs'
 
-class ProductManager {
+export class ProductManager {
     products
 
     constructor(path) {
@@ -29,7 +29,7 @@ class ProductManager {
 
     async getProducts() {
         const get = await fs.promises.readFile(this.path, 'utf-8')
-        console.log(get);
+        return(get);
     }
 
     async getProductById(id) {
@@ -38,9 +38,9 @@ class ProductManager {
         const found = JSON.parse(await fs.promises.readFile(this.path, 'utf-8')).find(e => e.id == id)
 
         if (found === undefined) {
-            throw new Error('Not found')
+            return('Not found')
         } else {
-            console.log(found)
+            return(found)
         }
     }
 
@@ -109,19 +109,21 @@ class Product {
 
 const productManager = new ProductManager('./products.json')
 
-async function runTest() {
-    await productManager.firstTime()
-    await productManager.getProducts()
-    await productManager.addProduct({title: "producto prueba", description: "Este es un producto prueba", price: 200, thumbnail: "Sin imagen", code: "abc123", stock: 25})
-    await productManager.getProducts()
-    await productManager.getProductById(1)
-    await productManager.updateProduct(1, {title: "updated"})
-    await productManager.getProductById(1)
-    await productManager.deleteProduct(1)
-    await productManager.getProducts()
-  }
+//async function runTest() {
+//    await productManager.firstTime()
+//    await productManager.getProducts()
+//    await productManager.addProduct({title: "producto prueba", description: "Este es un producto prueba", price: 200, thumbnail: "Sin imagen", code: "abc123", stock: 25})
+//    await productManager.addProduct({title: "title 2", description: "description 2", price: 200, thumbnail: "Sin imagen", code: "222", stock: 25})
+//    await productManager.addProduct({title: "title 3", description: "description 3", price: 200, thumbnail: "Sin imagen", code: "333", stock: 25})
+//    await productManager.getProducts()
+//    await productManager.getProductById(1)
+//    await productManager.updateProduct(1, {title: "updated"})
+//    await productManager.getProductById(1)
+//    await productManager.deleteProduct(1)
+//    await productManager.getProducts()
+//  }
 
-runTest()
+// runTest()
 
 //Error: Code already exists
 //productManager.addProduct({title: "producto prueba", description: "Este es un producto prueba", price: 200, thumbnail: "Sin imagen", code: "abc123", stock: 25})
