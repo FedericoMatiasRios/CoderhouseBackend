@@ -19,11 +19,20 @@ export class ProductManager {
     }
 
     // métodos
-    async addProduct({title, description, price, thumbnail, code, stock}) {
+    async addProduct({title, description, code, price, status, stock, category, thumbnails, id}) {
+        
+        if(!title) throw new Error('Title is missing.')
+        if(!description) throw new Error('Description is missing.')
+        if(!code) throw new Error('Code is missing.')
+        if(!price) throw new Error('Price is missing.')
+        if(!stock) throw new Error('Stock is missing.')
+        if(!category) throw new Error('Category is missing.')
+        id = Math.max(...JSON.parse(await fs.promises.readFile('./products.json', 'utf-8')).map(o => o.id)) + 1;
+        
         const exists = JSON.parse(await fs.promises.readFile(this.path, 'utf-8')).some(e => e.code === code);
         if (exists) throw new Error('Code already exists');
 
-        await this.products.push(new Product({title, description, price, thumbnail, code, stock}))
+        await this.products.push(new Product({title, description, code, price, status, stock, category, thumbnails, id}))
         await fs.promises.writeFile(this.path, JSON.stringify(this.products))
     }
 
@@ -44,18 +53,23 @@ export class ProductManager {
         }
     }
 
-    async updateProduct(id, {title, description, price, thumbnail, code, stock}) {
+    async updateProduct(id, {title, description, code, price, status, stock, category, thumbnails}) {
         const found = JSON.parse(await fs.promises.readFile(this.path, 'utf-8')).find(e => e.id == id)
 
         if (found === undefined) {
             throw new Error('Not found')
         } else {
-            if (title !== undefined) {this.products[id-1].title = title;}
-            if (description !== undefined) {this.products[id-1].description = description;}
-            if (price !== undefined) {this.products[id-1].price = price;}
-            if (thumbnail !== undefined) {this.products[id-1].thumbnail = thumbnail;}
-            if (code !== undefined) {this.products[id-1].code = code;}
-            if (stock !== undefined) {this.products[id-1].stock = stock;}
+            console.log(found);
+            console.log(title);
+            console.log(description);
+            if (title !== undefined) {found.title = title;}
+            if (description !== undefined) {found.description = description;}
+            if (code !== undefined) {found.code = code;}
+            if (price !== undefined) {found.price = price;}
+            if (status !== undefined) {found.status = status;}
+            if (stock !== undefined) {found.stock = stock;}
+            if (category !== undefined) {found.category = category;}
+            if (thumbnails !== undefined) {found.thumbnails = thumbnails;}
             console.log("Updated")
         }
         
@@ -78,32 +92,31 @@ export class ProductManager {
 class Product {
 
     static id = 0;
-
-    static incrementId() {
-        this.id++; 
-    }
     
     title
     description
-    price
-    thumbnail
     code
+    price
+    status
     stock
+    category
+    thumbnails
 
-    constructor({title, description, price, thumbnail, code, stock}) {
+    constructor({title, description, code, price, status, stock, category, thumbnails, id}) {
 
         if (code == undefined) {
             throw new Error('Not Found')
         }
 
-        Product.incrementId();
-        this.id = Product.id;
+        this.id = id;
         this.title = title
         this.description = description
-        this.price = price
-        this.thumbnail = thumbnail
         this.code = code
+        this.price = price
+        this.status = true
         this.stock = stock
+        this.category = category
+        this.thumbnails = thumbnails
     }
 }
 
