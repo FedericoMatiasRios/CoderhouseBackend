@@ -59,17 +59,14 @@ export class ProductManager {
         if (found === undefined) {
             throw new Error('Not found')
         } else {
-            console.log(found);
-            console.log(title);
-            console.log(description);
-            if (title !== undefined) {found.title = title;}
-            if (description !== undefined) {found.description = description;}
-            if (code !== undefined) {found.code = code;}
-            if (price !== undefined) {found.price = price;}
-            if (status !== undefined) {found.status = status;}
-            if (stock !== undefined) {found.stock = stock;}
-            if (category !== undefined) {found.category = category;}
-            if (thumbnails !== undefined) {found.thumbnails = thumbnails;}
+            if (title !== undefined) {this.products.find(e => e.id == id).title = title;}
+            if (description !== undefined) {this.products.find(e => e.id == id).description = description;}
+            if (code !== undefined) {this.products.find(e => e.id == id).code = code;}
+            if (price !== undefined) {this.products.find(e => e.id == id).price = price;}
+            if (status !== undefined) {this.status.find(e => e.id == id).status = status;}
+            if (stock !== undefined) {this.products.find(e => e.id == id).stock = stock;}
+            if (category !== undefined) {this.products.find(e => e.id == id).category = category;}
+            if (thumbnails !== undefined) {this.products.find(e => e.id == id).thumbnails = thumbnails;}
             console.log("Updated")
         }
         
