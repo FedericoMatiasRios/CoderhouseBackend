@@ -1,9 +1,9 @@
 import express from 'express'
-import { ProductManager } from './ProductManager.js'
-import { CartsManager } from './CartsManager.js'
+import { ProductManager } from '../src/managers/ProductManager.js'
+import { CartsManager } from '../src/managers/CartsManager.js'
 
-const productManager = new ProductManager('./products.json')
-const cartsManager = new CartsManager('./carts.json')
+const productManager = new ProductManager('./database/products.json')
+const cartsManager = new CartsManager('./database/carts.json')
 
 // Controladores Products
 
@@ -29,18 +29,18 @@ async function controladorId(request, response) {
 async function controladorProductsPost(request, response) {
     await productManager.firstTime()
     await productManager.addProduct(request.body)
-    response.status(201).json(request.body)
+    response.status(201).send('Product added!')
 }
 
 async function controladorUpdate(request, response) {
     await productManager.firstTime()
     await productManager.updateProduct(request.params.pid, request.body)
-    response.status(201).json(request.body)
+    response.status(201).send('Product uptdated!')
 }
 
 async function controladorDelete(request, response) {
     await productManager.deleteProduct(request.params.pid) 
-    response.status(201).send(request.body)
+    response.status(201).send('Product deleted!')
 }
 
 // Controladores Carts

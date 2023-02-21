@@ -27,8 +27,15 @@ export class ProductManager {
         if(!price) throw new Error('Price is missing.')
         if(!stock) throw new Error('Stock is missing.')
         if(!category) throw new Error('Category is missing.')
-        id = Math.max(...JSON.parse(await fs.promises.readFile('./products.json', 'utf-8')).map(o => o.id)) + 1;
         
+        let getId = Math.max(...JSON.parse(await fs.promises.readFile('./database/products.json', 'utf-8')).map(o => o.id))
+        
+        if(getId > 0){
+            id = getId + 1
+        } else {
+            id = 1
+        }
+
         const exists = JSON.parse(await fs.promises.readFile(this.path, 'utf-8')).some(e => e.code === code);
         if (exists) throw new Error('Code already exists');
 
@@ -117,7 +124,7 @@ class Product {
     }
 }
 
-const productManager = new ProductManager('./products.json')
+const productManager = new ProductManager('./database/products.json')
 
 //async function runTest() {
 //    await productManager.firstTime()
