@@ -2,6 +2,8 @@ import express from 'express'
 import { ProductManager } from '../src/managers/ProductManager.js'
 import { CartsManager } from '../src/managers/CartsManager.js'
 
+import { Server } from 'socket.io'
+
 const productManager = new ProductManager('./database/products.json')
 const cartsManager = new CartsManager('./database/carts.json')
 
@@ -79,6 +81,18 @@ app.post('/api/carts/', controladorNewCart)
 app.get('/api/carts/:cid', controladorGetCart)
 app.post('/api/carts/:cid/product/:pid', controladorAddToCart)
 
+//views
+app.use(express.static('../views'))
 
 const puerto = 8080
-app.listen(puerto, ()=> { console.log('Conectado.') })
+const servidorConectado = app.listen(puerto, ()=> { console.log('Conectado.') })
+
+const io = new Server(servidorConectado)
+io.on('connection', socket => {
+    console.log('nuevo cliente conectado!')
+    
+    socket.on('respuesta', data => {console.log(data)})
+
+    //socket.emit('mensaje', 'holaaaaaaaaa')
+    io.sockets.emit('mensaje', 'holaaaaaaaaa')
+})
