@@ -23,7 +23,7 @@ export class CartsManager {
         
         if(!products) throw new Error('Products are missing.')
 
-        let getId = Math.max(...JSON.parse(await fs.promises.readFile('./database/carts.json', 'utf-8')).map(o => o.id))
+        let getId = Math.max(...JSON.parse(await fs.promises.readFile('./src/database/carts.json', 'utf-8')).map(o => o.id))
         
         if(getId > 0){
             id = getId + 1
@@ -85,7 +85,7 @@ class Cart {
     }
 }
 
-const cartsManager = new CartsManager('./database/carts.json')
+const cartsManager = new CartsManager('./src/database/carts.json')
 
 // async function runTest() {
 //    await cartsManager.firstTime()

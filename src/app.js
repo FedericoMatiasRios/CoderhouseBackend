@@ -4,8 +4,23 @@ import { CartsManager } from '../src/managers/CartsManager.js'
 
 import { Server } from 'socket.io'
 
-const productManager = new ProductManager('./database/products.json')
-const cartsManager = new CartsManager('./database/carts.json')
+import { Router } from 'express'
+export const webRouter = Router()
+
+webRouter.get('/', async (req, res) => {
+    let products = await productManager.getProducts();
+    products = JSON.parse(products)
+    res.render('home', {hayProductos : products.length > 0, products});
+})
+
+webRouter.get('/realtimeproducts', async (req, res) => {
+    let products = await productManager.getProducts();
+    products = JSON.parse(products)
+    res.render('realTimeProducts', {hayProductos : products.length > 0, products});
+})
+
+const productManager = new ProductManager('./src/database/products.json')
+const cartsManager = new CartsManager('./src/database/carts.json')
 
 // Controladores Products
 
@@ -81,8 +96,15 @@ app.post('/api/carts/', controladorNewCart)
 app.get('/api/carts/:cid', controladorGetCart)
 app.post('/api/carts/:cid/product/:pid', controladorAddToCart)
 
+//////////////////////////////////////
+import { engine } from 'express-handlebars'
+app.engine('handlebars', engine())
 //views
-app.use(express.static('../views'))
+app.set('views', './views')
+app.set('view engine', 'handlebars')
+app.use('/', webRouter)
+app.use('/realtimeproducts', webRouter)
+////////////////////////////////////7
 
 const puerto = 8080
 const servidorConectado = app.listen(puerto, ()=> { console.log('Conectado.') })
@@ -95,4 +117,20 @@ io.on('connection', socket => {
 
     //socket.emit('mensaje', 'holaaaaaaaaa')
     io.sockets.emit('mensaje', 'holaaaaaaaaa')
+
+    socket.on('nuevoProducto', async prod => {
+        await productManager.firstTime()
+        await productManager.addProduct(prod)
+        let products = await productManager.getProducts();
+        products = JSON.parse(products)
+        io.sockets.emit('actualizar', products)
+    })
+
+    socket.on('deleteProduct', async id => {
+        await productManager.firstTime()
+        await productManager.deleteProduct(id)
+        let products = await productManager.getProducts();
+        products = JSON.parse(products)
+        io.sockets.emit('actualizar', products)
+    })
 })

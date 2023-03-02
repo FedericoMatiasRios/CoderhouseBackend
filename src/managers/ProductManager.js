@@ -28,7 +28,7 @@ export class ProductManager {
         if(!stock) throw new Error('Stock is missing.')
         if(!category) throw new Error('Category is missing.')
         
-        let getId = Math.max(...JSON.parse(await fs.promises.readFile('./database/products.json', 'utf-8')).map(o => o.id))
+        let getId = Math.max(...JSON.parse(await fs.promises.readFile('./src/database/products.json', 'utf-8')).map(o => o.id))
         
         if(getId > 0){
             id = getId + 1
@@ -124,7 +124,7 @@ class Product {
     }
 }
 
-const productManager = new ProductManager('./database/products.json')
+const productManager = new ProductManager('./src/database/products.json')
 
 //async function runTest() {
 //    await productManager.firstTime()
