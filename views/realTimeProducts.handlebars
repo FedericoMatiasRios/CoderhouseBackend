@@ -1,36 +1,39 @@
-<h1>Real Time</h1>
-
-<h2>Cargar</h2>
-<form>
-<label for="title">Title:</label><br>
-<input type="text" id="title"><br>
-<label for="description">Description:</label><br>
-<input type="text" id="description"><br>
-<label for="code">Code:</label><br>
-<input type="number" id="code"><br>
-<label for="price">Price:</label><br>
-<input type="number" id="price"><br>
-<label for="stock">Stock:</label><br>
-<input type="number" id="stock"><br>
-<label for="category">Category:</label><br>
-<input type="text" id="category"><br>
-<button id="btnNuevoProd">Enviar</button>
-</form>
-
-<h2>Products</h2>
+<center><h1>Real Time Products</h1></center>
+<section style="display:flex;justify-content:space-evenly">
 <div>
-    {{#if hayProductos}}
-    <ul id="productsList">
-        {{#each products}}
-        <li>
-            {{this.title}}: ${{this.price}}, stock: {{this.stock}}
-            <button id="{{this.id}}" class="btnDeleteProd">Delete</button>
-        </li>
-        {{/each}}
-    </ul>
-    {{/if}}
+    <h2>Add New Product:</h2>
+    <form>
+    <label for="title">Title:</label><br>
+    <input type="text" id="title"><br>
+    <label for="description">Description:</label><br>
+    <input type="text" id="description"><br>
+    <label for="code">Code:</label><br>
+    <input type="number" id="code"><br>
+    <label for="price">Price:</label><br>
+    <input type="number" id="price"><br>
+    <label for="stock">Stock:</label><br>
+    <input type="number" id="stock"><br>
+    <label for="category">Category:</label><br>
+    <input type="text" id="category"><br><br>
+    <button id="btnNuevoProd">Add</button>
+    </form>
 </div>
-
+<div>
+    <h2>Products:</h2>
+    <div>
+        {{#if hayProductos}}
+        <ul id="productsList">
+            {{#each products}}
+            <li>
+                {{this.title}}: ${{this.price}}, stock: {{this.stock}}
+                <button id="{{this.id}}" class="btnDeleteProd">Delete</button>
+            </li>
+            {{/each}}
+        </ul>
+        {{/if}}
+    </div>
+</div>
+</section>
 <script src="/socket.io/socket.io.js"></script>
 <script>
     const socket = io()
@@ -74,6 +77,4 @@
         }
         activateDeleteButtons();
     })
-
-    socket.emit('nuevo')
 </script>
