@@ -86,9 +86,10 @@ export class ProductManager {
         if (found === undefined) {
             throw new Error('Not found')
         } else {
-            this.products.splice(id-1, 1)
+            let index = this.products.findIndex(e => e.id == id);
+            this.products.splice(index, 1)
             await fs.promises.writeFile(this.path, JSON.stringify(this.products))
-            console.log("Deleted")
+            console.log("Deleted product with id:" + id)
         }
     }
 }

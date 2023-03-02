@@ -107,11 +107,11 @@ app.use('/realtimeproducts', webRouter)
 ////////////////////////////////////7
 
 const puerto = 8080
-const servidorConectado = app.listen(puerto, ()=> { console.log('Conectado.') })
+const servidorConectado = app.listen(puerto, ()=> { console.log('Connected.') })
 
 const io = new Server(servidorConectado)
 io.on('connection', socket => {
-    console.log('nuevo cliente conectado!')
+    console.log('New client connected!')
     
     socket.on('respuesta', data => {console.log(data)})
 
