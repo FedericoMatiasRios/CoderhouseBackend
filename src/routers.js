@@ -125,7 +125,7 @@ app.post('/api/carts/:cid/product/:pid', controladorAddToCart)
 
 //views
 app.engine('handlebars', engine())
-app.set('views', './views')
+app.set('views', '../views')
 app.set('view engine', 'handlebars')
 app.use('/', webRouter)
 app.use('/realtimeproducts', webRouter)

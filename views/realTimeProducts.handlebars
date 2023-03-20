@@ -24,10 +24,10 @@
         {{#if hayProductos}}
         <ul id="productsList">
             {{#each products}}
-            <li>
-                {{this.title}}: ${{this.price}}, stock: {{this.stock}}
-                <button id="{{this.id}}" class="btnDeleteProd">Delete</button>
-            </li>
+                    <li>
+                        {{this.title}}: ${{this.price}}, stock: {{this.stock}}
+                        <button id="{{this.id}}" class="btnDeleteProd">Delete</button>
+                    </li>
             {{/each}}
         </ul>
         {{/if}}

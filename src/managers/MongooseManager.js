@@ -10,36 +10,35 @@ export class MongooseManager {
     }
 
     async getProducts() {
-        return await this.#db.find()
+        return await this.#db.find().lean()
     }
 
     async getProductById(id) {
-        return await this.#db.findOne({_id: id})
+        return await this.#db.findOne({_id: id}).lean()
     }
 
     async updateProduct(id, newProd) {
-        return await this.#db.replaceOne({id}, newProd)
+        return await this.#db.replaceOne({id}, newProd).lean()
     }
 
     async deleteProduct(id) {
-        return await this.#db.deleteOne({id})
+        return await this.#db.deleteOne({id}).lean()
     }
 
     //Carts
     async newCart(products) {
-        await this.#db.create(products)
+        await this.#db.create(products).lean()
     }
 
     async getCarts() {
-        return await this.#db.find()
+        return await this.#db.find().lean()
     }
 
     async getCartById(id) {
-        return await this.#db.findOne({_id: id})
+        return await this.#db.findOne({_id: id}).lean()
     }
 
     async addToCart({product, quantity = 1}) {     
-        await this.#db.create({product, quantity})
-        return prod 
+        return await this.#db.create({product, quantity}).lean()
     }
 }
