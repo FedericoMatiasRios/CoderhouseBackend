@@ -3,12 +3,14 @@ import { engine } from 'express-handlebars'
 import { ProductManager } from './managers/ProductManager.js';
 import { CartsManager } from './managers/CartsManager.js';
 import { Router } from 'express';
+import { productsManagerMongoose } from './managers/ProductManagerMongoose.js';
+import { cartManagerMongoose } from './managers/CartsManagerMongoose.js';
 
 export const webRouter = Router();
 webRouter.get('/', async (req, res) => {
     try {
-    let products = await productManager.getProducts();
-    products = JSON.parse(products);
+    let products = await productsManagerMongoose.getProducts();
+    // products = JSON.parse(products);
     res.render('home', { hayProductos: products.length > 0, products });
     } catch(err) { 
         console.log(err)
@@ -16,22 +18,22 @@ webRouter.get('/', async (req, res) => {
 });
 webRouter.get('/realtimeproducts', async (req, res) => {
     try {
-    let products = await productManager.getProducts();
-    products = JSON.parse(products);
+    let products = await productsManagerMongoose.getProducts();
+    // products = JSON.parse(products);
     res.render('realTimeProducts', { hayProductos: products.length > 0, products });
     } catch(err) { 
         console.log(err)
     }
 });
-export const productManager = new ProductManager('./src/database/products.json');
-const cartsManager = new CartsManager('./src/database/carts.json');
+export const productManager = new ProductManager('./database/products.json');
+const cartsManager = new CartsManager('./database/carts.json');
 // Controladores Products
 async function controladorProductsGet(request, response) {
     try {
-    let products = await productManager.getProducts();
+    let products = await productsManagerMongoose.getProducts();
     const limit = parseInt(request.query.limit);
-    products = JSON.parse(products);
-
+    // products = JSON.parse(products);
+    console.log(products);
     if (limit) {
         products = products.slice(0, limit);
     }
@@ -43,7 +45,7 @@ async function controladorProductsGet(request, response) {
 }
 async function controladorId(request, response) {
     try {
-    const products = await productManager.getProductById(request.params.pid);
+    const products = await productsManagerMongoose.getProductById(request.params.pid);
     response.json(products);
     // http://127.0.0.1:8080/products/2
     } catch(err) { 
@@ -52,8 +54,8 @@ async function controladorId(request, response) {
 }
 async function controladorProductsPost(request, response) {
     try {
-    await productManager.firstTime();
-    await productManager.addProduct(request.body);
+    // await productManager.firstTime();
+    await productsManagerMongoose.addProduct(request.body);
     response.status(201).send('Product added!');
     } catch(err) { 
         console.log(err)
@@ -61,8 +63,8 @@ async function controladorProductsPost(request, response) {
 }
 async function controladorUpdate(request, response) {
     try {
-    await productManager.firstTime();
-    await productManager.updateProduct(request.params.pid, request.body);
+    // await productManager.firstTime();
+    await productsManagerMongoose.updateProduct(request.params.pid, request.body);
     response.status(201).send('Product uptdated!');
     } catch(err) { 
         console.log(err)
@@ -70,7 +72,7 @@ async function controladorUpdate(request, response) {
 }
 async function controladorDelete(request, response) {
     try {
-    await productManager.deleteProduct(request.params.pid);
+    await productsManagerMongoose.deleteProduct(request.params.pid);
     response.status(201).send('Product deleted!');
     } catch(err) { 
         console.log(err)
@@ -79,8 +81,8 @@ async function controladorDelete(request, response) {
 // Controladores Carts
 async function controladorNewCart(request, response) {
     try {
-    await cartsManager.firstTime();
-    await cartsManager.newCart({ products: [] });
+    // await cartsManager.firstTime();
+    await cartManagerMongoose.newCart({ products: [] });
     response.status(201).send('New cart created!');
     } catch(err) { 
         console.log(err)
@@ -88,7 +90,7 @@ async function controladorNewCart(request, response) {
 }
 async function controladorGetCart(request, response) {
     try {
-    let cart = await cartsManager.getCartById(request.params.cid);
+    let cart = await cartManagerMongoose.getCartById(request.params.cid);
     response.json(cart);
     } catch(err) { 
         console.log(err)
@@ -96,8 +98,8 @@ async function controladorGetCart(request, response) {
 }
 async function controladorAddToCart(request, response) {
     try {
-    await cartsManager.firstTime();
-    await cartsManager.addToCart(request.params.cid, { product: request.params.pid });
+    // await cartsManager.firstTime();
+    await cartManagerMongoose.addToCart(request.params.cid, { product: request.params.pid });
     response.status(201).send('Product: ' + request.params.pid + ', added in Cart: ' + request.params.cid);
     } catch(err) { 
         console.log(err)
