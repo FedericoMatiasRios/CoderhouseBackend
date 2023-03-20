@@ -29,7 +29,7 @@ io.on('connection', socket => {
         await productsManagerMongoose.addProduct(prod)
         let products = await productsManagerMongoose.getProducts();
 
-        products = JSON.parse(products)
+        // products = JSON.parse(products)
         io.sockets.emit('actualizar', products)
     })
 
@@ -37,11 +37,10 @@ io.on('connection', socket => {
         // await productManager.firstTime()
         // await productManager.deleteProduct(id)
         // let products = await productManager.getProducts();
-
         await productsManagerMongoose.deleteProduct(id)
         let products = await productsManagerMongoose.getProducts();
 
-        products = JSON.parse(products)
+        // products = JSON.parse(products)
         io.sockets.emit('actualizar', products)
     })
 })

@@ -12,6 +12,6 @@ const productSchema = mongoose.Schema({
     thumbnails: [{type: Array, required: true}], 
 })
 
-export const productDb = mongoose.model('products', productSchema)
+const productDb = mongoose.model('products', productSchema)
 
 export const productsManagerMongoose = new MongooseManager(productDb)

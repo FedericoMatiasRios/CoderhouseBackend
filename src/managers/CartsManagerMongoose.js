@@ -5,6 +5,6 @@ const cartSchema = mongoose.Schema({
     products: [{type: Array, required: true}],
 })
 
-export const cartDb = mongoose.model('carts', cartSchema)
+const cartDb = mongoose.model('carts', cartSchema)
 
 export const cartManagerMongoose = new MongooseManager(cartDb)

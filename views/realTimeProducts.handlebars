@@ -26,7 +26,7 @@
             {{#each products}}
                     <li>
                         {{this.title}}: ${{this.price}}, stock: {{this.stock}}
-                        <button id="{{this.id}}" class="btnDeleteProd">Delete</button>
+                        <button id="{{this._id}}" class="btnDeleteProd">Delete</button>
                     </li>
             {{/each}}
         </ul>
