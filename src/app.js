@@ -1,9 +1,10 @@
 import { Server } from 'socket.io'
-import { productsManagerMongoose } from './managers/ProductManagerMongoose.js'
-import { app, productManager } from './routers.js'
+import { productsManagerMongoose } from './models/ProductSchema.js'
+import { app } from './routers/routers.js'
+import { productManager } from "./controllers/controllers.js"
 
 import { mongoose } from 'mongoose'
-import { MONGODB_CNX_STR } from './config.js'
+import { MONGODB_CNX_STR } from './config/config.js'
 await mongoose.connect(MONGODB_CNX_STR, {
     useNewUrlParser: true,
     useUnifiedTopology: true,

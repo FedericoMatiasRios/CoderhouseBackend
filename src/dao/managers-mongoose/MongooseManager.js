@@ -3,7 +3,8 @@ export class MongooseManager {
     constructor(db) {
         this.#db = db
     }
-   
+    
+    //Products
     async addProduct(prod) {
         await this.#db.create(prod)
         return prod
@@ -48,34 +49,29 @@ export class MongooseManager {
         return await this.#db.findOne({_id: id}).lean()
     }
 
-    async addToCart(id, {product, quantity = 1}) {
-
-        const cart = await this.#db.findOne({_id: id})
-        
-        if (product !== undefined && quantity !== undefined) {
-            if (cart.products.quantity){
-                // cart.quantity += 1
-                const cartX = await this.#db.findOneAndUpdate({_id :id}, { $inc: { 'products.quantity': 1 }})
-                
-                console.log(cartX)
-                console.log("Updated")
-            } else {
-                // this.carts.find(e => e.id == id).products.push({product, quantity});
-
-                this.#db.findOne(
-                    { _id: id }, 
-                    { $push: {products: 'new data'}},
-                )
-                .then(updateDoc =>{
-                    console.log('success', updateDoc)
-                })
-                .catch(err => {
-                    console.error(err);
-                })
-
-                console.log("Added")
-            }
+    async addToCart(id, { product, quantity = 1 }) {
+        if (!product || !quantity) {
+          return;
         }
-        // return await this.#db.create({product, quantity})
-    }
+      
+        const existingProduct = await this.#db.findOneAndUpdate(
+          { _id: id, 'products.product': product },
+          { $inc: { 'products.$.quantity': quantity } },
+          { new: true }
+        );
+      
+        if (existingProduct) {
+          console.log('Cart updated:', existingProduct);
+          return;
+        }
+            
+        const newProduct = { product, quantity };
+        const updatedCart = await this.#db.findOneAndUpdate(
+          { _id: id },
+          { $push: { products: newProduct } },
+          { new: true }
+        );
+      
+        console.log('Cart updated:', updatedCart);
+      }
 }

@@ -1,5 +1,5 @@
 import mongoose from 'mongoose'
-import { MongooseManager } from './MongooseManager.js'
+import { MongooseManager } from '../dao/managers-mongoose/MongooseManager.js'
 
 const cartSchema = mongoose.Schema({
     products: [{type: Array, required: true}],

@@ -1,5 +1,5 @@
 import mongoose from 'mongoose'
-import { MongooseManager } from './MongooseManager.js'
+import { MongooseManager } from '../dao/managers-mongoose/MongooseManager.js'
 
 const productSchema = mongoose.Schema({
     title: {type: String, required: true}, 
