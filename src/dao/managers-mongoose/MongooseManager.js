@@ -4,20 +4,21 @@ export class MongooseManager {
         this.#db = db
     }
     
-    //Products
-    async addProduct(prod) {
+    //Generic
+    async add(prod) {
         await this.#db.create(prod)
         return prod
     }
 
-    async getProducts() {
+    async getAll() {
         return await this.#db.find().lean()
     }
 
-    async getProductById(id) {
+    async getById(id) {
         return await this.#db.findOne({_id: id}).lean()
     }
 
+    //Products
     async updateProduct(id, newProd) {
         const products = await this.#db.findOne({_id: id})
         if (newProd.title === undefined) {newProd.title = products.title;}
@@ -36,19 +37,6 @@ export class MongooseManager {
     }
 
     //Carts
-    async newCart(products) {
-        await this.#db.create(products)
-        return products
-    }
-
-    async getCarts() {
-        return await this.#db.find().lean()
-    }
-
-    async getCartById(id) {
-        return await this.#db.findOne({_id: id}).lean()
-    }
-
     async addToCart(id, { product, quantity = 1 }) {
         if (!product || !quantity) {
           return;

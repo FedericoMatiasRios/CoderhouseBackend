@@ -1,0 +1,52 @@
+<section style="display:flex;justify-content:space-evenly">
+<div>
+    <h2>Send New Message:</h2>
+    <form>
+    <label for="user">User:</label><br>
+    <input type="text" id="user"><br>
+    <label for="message">Message:</label><br>
+    <textarea id="message" name="message" cols="40" rows="5"></textarea><br><br>
+    <button id="btnNuevoMsg">Add</button>
+    </form>
+</div>
+<div>
+    <h2>Messages:</h2>
+    <div>
+        {{#if hayMensajes}}
+        <ul id="messageList">
+            {{#each messages}}
+            <li>
+                user: {{this.user}}, message: {{this.message}}
+            </li>
+            {{/each}}
+        </ul>
+        {{/if}}
+    </div>
+</div>
+</section>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    const socket = io()
+
+    //send message
+    document.querySelector('#btnNuevoMsg')?.addEventListener('click', ev => {
+        const prod = {
+            user: document.querySelector('#user').value,
+            message: document.querySelector('#message').value
+        }
+        socket.emit('nuevoMensaje', prod)
+    })
+
+    //refresh
+    socket.on('actualizarMsg', messages => {
+        document.getElementById("messageList").innerHTML = "";
+        let text = "";
+        for (let i = 0; i < messages.length; i++) {
+        text = "user: " + messages[i].user + ", message: " + messages[i].message;
+        let listItem = document.createElement("LI");
+        listItem.textContent = text;
+        document.getElementById("messageList").appendChild(listItem);
+        }
+        activateDeleteButtons();
+    })
+</script>

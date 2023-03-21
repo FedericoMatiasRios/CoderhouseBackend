@@ -2,9 +2,10 @@ import { Server } from 'socket.io'
 import { productsManagerMongoose } from './models/ProductSchema.js'
 import { app } from './routers/routers.js'
 import { productManager } from "./controllers/controllers.js"
-
 import { mongoose } from 'mongoose'
 import { MONGODB_CNX_STR } from './config/config.js'
+import { messagesManagerMongoose } from './models/MessagesSchema.js'
+
 await mongoose.connect(MONGODB_CNX_STR, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
@@ -27,8 +28,8 @@ io.on('connection', socket => {
         // await productManager.addProduct(prod)
         // let products = await productManager.getProducts();
 
-        await productsManagerMongoose.addProduct(prod)
-        let products = await productsManagerMongoose.getProducts();
+        await productsManagerMongoose.add(prod)
+        let products = await productsManagerMongoose.getAll();
 
         // products = JSON.parse(products)
         io.sockets.emit('actualizar', products)
@@ -39,9 +40,17 @@ io.on('connection', socket => {
         // await productManager.deleteProduct(id)
         // let products = await productManager.getProducts();
         await productsManagerMongoose.deleteProduct(id)
-        let products = await productsManagerMongoose.getProducts();
+        let products = await productsManagerMongoose.getAll();
 
         // products = JSON.parse(products)
         io.sockets.emit('actualizar', products)
     })
+
+    socket.on('nuevoMensaje', async msg => {
+      await messagesManagerMongoose.add(msg)
+      let messages = await messagesManagerMongoose.getAll();
+
+      // products = JSON.parse(products)
+      io.sockets.emit('actualizarMsg', messages)
+  })
 })

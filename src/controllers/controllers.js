@@ -3,12 +3,12 @@ import { CartsManager } from '../dao/manafers-fs/CartsManager.js';
 import { Router } from 'express';
 import { productsManagerMongoose } from '../models/ProductSchema.js';
 import { cartManagerMongoose } from '../models/CartSchema.js';
-
+import { messagesManagerMongoose } from '../models/MessagesSchema.js';
 
 export const webRouter = Router();
 webRouter.get('/', async (req, res) => {
     try {
-        let products = await productsManagerMongoose.getProducts();
+        let products = await productsManagerMongoose.getAll();
         // products = JSON.parse(products);
         res.render('home', { hayProductos: products.length > 0, products });
     } catch (err) {
@@ -17,9 +17,17 @@ webRouter.get('/', async (req, res) => {
 });
 webRouter.get('/realtimeproducts', async (req, res) => {
     try {
-        let products = await productsManagerMongoose.getProducts();
+        let products = await productsManagerMongoose.getAll();
         // products = JSON.parse(products);
         res.render('realTimeProducts', { hayProductos: products.length > 0, products });
+    } catch (err) {
+        console.log(err);
+    }
+});
+webRouter.get('/messages', async (req, res) => {
+    try {
+        let messages = await messagesManagerMongoose.getAll();
+        res.render('chat', { hayMensajes: messages.length > 0, messages });
     } catch (err) {
         console.log(err);
     }
@@ -29,7 +37,7 @@ const cartsManager = new CartsManager('./database/carts.json');
 // Controladores Products
 export async function controladorProductsGet(request, response) {
     try {
-        let products = await productsManagerMongoose.getProducts();
+        let products = await productsManagerMongoose.getAll();
         const limit = parseInt(request.query.limit);
         // products = JSON.parse(products);
         console.log(products);
@@ -44,7 +52,7 @@ export async function controladorProductsGet(request, response) {
 }
 export async function controladorId(request, response) {
     try {
-        const products = await productsManagerMongoose.getProductById(request.params.pid);
+        const products = await productsManagerMongoose.getById(request.params.pid);
         response.json(products);
         // http://127.0.0.1:8080/products/2
     } catch (err) {
@@ -54,7 +62,7 @@ export async function controladorId(request, response) {
 export async function controladorProductsPost(request, response) {
     try {
         // await productManager.firstTime();
-        await productsManagerMongoose.addProduct(request.body);
+        await productsManagerMongoose.add(request.body);
         response.status(201).send('Product added!');
     } catch (err) {
         console.log(err);
@@ -80,7 +88,7 @@ export async function controladorDelete(request, response) {
 // Controladores Carts
 export async function controladorGetAllCarts(request, response) {
     try {
-        let carts = await cartManagerMongoose.getCarts();
+        let carts = await cartManagerMongoose.getAll();
         const limit = parseInt(request.query.limit);
         // products = JSON.parse(products);
         console.log(carts);
@@ -96,7 +104,7 @@ export async function controladorGetAllCarts(request, response) {
 export async function controladorNewCart(request, response) {
     try {
         // await cartsManager.firstTime();
-        await cartManagerMongoose.newCart({ products: [] });
+        await cartManagerMongoose.add({ products: [] });
         response.status(201).send('New cart created!');
     } catch (err) {
         console.log(err);
@@ -104,7 +112,7 @@ export async function controladorNewCart(request, response) {
 }
 export async function controladorGetCart(request, response) {
     try {
-        let cart = await cartManagerMongoose.getCartById(request.params.cid);
+        let cart = await cartManagerMongoose.getById(request.params.cid);
         response.json(cart);
     } catch (err) {
         console.log(err);
