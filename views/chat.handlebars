@@ -14,7 +14,7 @@
     <div>
         {{#if hayMensajes}}
         <ul id="messageList">
-            {{#each messages}}
+            {{#each messages.docs}}
             <li>
                 user: {{this.user}}, message: {{this.message}}
             </li>

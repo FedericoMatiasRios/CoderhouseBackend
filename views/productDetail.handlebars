@@ -1,0 +1,13 @@
+<h1>Product Detail</h1>
+<ul>
+    <li>Title: {{product.title}}</li>
+    <li>Description: {{product.description}}</li>
+    <li>Code: {{product.code}}</li>
+    <li>Price: ${{product.price}}</li>
+    <li>Stock: {{product.stock}}</li>
+    <li>Category: {{product.category}}</li>
+    <li>Thumbnails: {{product.thumbnails}}</li>
+</ul>
+<form method="post" action="/api/carts/{{ cartId }}/product/{{ product._id }}">
+    <button type="submit">Add to Cart</button>
+</form>

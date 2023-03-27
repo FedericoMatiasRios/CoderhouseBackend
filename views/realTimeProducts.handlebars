@@ -1,38 +1,51 @@
-<center><h1>Real Time Products</h1></center>
+<center>
+    <h1>Real Time Products</h1>
+</center>
 <section style="display:flex;justify-content:space-evenly">
-<div>
-    <h2>Add New Product:</h2>
-    <form>
-    <label for="title">Title:</label><br>
-    <input type="text" id="title"><br>
-    <label for="description">Description:</label><br>
-    <input type="text" id="description"><br>
-    <label for="code">Code:</label><br>
-    <input type="number" id="code"><br>
-    <label for="price">Price:</label><br>
-    <input type="number" id="price"><br>
-    <label for="stock">Stock:</label><br>
-    <input type="number" id="stock"><br>
-    <label for="category">Category:</label><br>
-    <input type="text" id="category"><br><br>
-    <button id="btnNuevoProd">Add</button>
-    </form>
-</div>
-<div>
-    <h2>Products:</h2>
     <div>
-        {{#if hayProductos}}
-        <ul id="productsList">
-            {{#each products}}
-                    <li>
-                        {{this.title}}: ${{this.price}}, stock: {{this.stock}}
-                        <button id="{{this._id}}" class="btnDeleteProd">Delete</button>
-                    </li>
-            {{/each}}
-        </ul>
-        {{/if}}
+        <h2>Add New Product:</h2>
+        <form>
+            <label for="title">Title:</label><br>
+            <input type="text" id="title"><br>
+            <label for="description">Description:</label><br>
+            <input type="text" id="description"><br>
+            <label for="code">Code:</label><br>
+            <input type="number" id="code"><br>
+            <label for="price">Price:</label><br>
+            <input type="number" id="price"><br>
+            <label for="stock">Stock:</label><br>
+            <input type="number" id="stock"><br>
+            <label for="category">Category:</label><br>
+            <input type="text" id="category"><br><br>
+            <button id="btnNuevoProd">Add</button>
+        </form>
     </div>
-</div>
+    <div>
+        <h2>Products:</h2>
+        <div>
+            {{#if hayProductos}}
+            <ul id="productsList">
+                {{#each products.docs}}
+                <li>
+                    {{this.title}}: ${{this.price}}, stock: {{this.stock}}
+                    <button id="{{this._id}}" class="btnDeleteProd">Delete</button>
+                </li>
+                {{/each}}
+            </ul>
+            {{!-- pagination --}}
+            Total pages: {{totalPages}} <br>
+            Current page: {{page}} <br>
+            {{#if products.hasPrevPage}}
+            <a href="{{prevLink}}">Prev Page</a>
+            {{/if}}
+            {{#if products.hasNextPage}}
+            <a href="{{nextLink}}">Next Page</a>
+            {{/if}}
+            {{else}}
+            <p>No hay productos disponibles</p>
+            {{/if}}
+        </div>
+    </div>
 </section>
 <script src="/socket.io/socket.io.js"></script>
 <script>
@@ -52,14 +65,14 @@
     })
 
     //delete
-    function activateDeleteButtons(){
+    function activateDeleteButtons() {
         deleteButtons = document.querySelectorAll('.btnDeleteProd');
         for (var i = 0; i < deleteButtons.length; i++) {
             deleteButtons[i]?.addEventListener('click', ev => {
-            console.log(event.target.id);
-            const id = event.target.id
-            socket.emit('deleteProduct', id)
-        });
+                console.log(event.target.id);
+                const id = event.target.id
+                socket.emit('deleteProduct', id)
+            });
         }
     }
     activateDeleteButtons();
@@ -69,11 +82,11 @@
         document.getElementById("productsList").innerHTML = "";
         let text = "";
         for (let i = 0; i < products.length; i++) {
-        text = products[i].title + ": $" + products[i].price + ", stock: " + products[i].stock;
-        let listItem = document.createElement("LI");
-        listItem.textContent = text;
-        listItem.innerHTML += " <button id='"+products[i].id+"' class='btnDeleteProd'>Delete</button>"
-        document.getElementById("productsList").appendChild(listItem);
+            text = products[i].title + ": $" + products[i].price + ", stock: " + products[i].stock;
+            let listItem = document.createElement("LI");
+            listItem.textContent = text;
+            listItem.innerHTML += " <button id='" + products[i].id + "' class='btnDeleteProd'>Delete</button>"
+            document.getElementById("productsList").appendChild(listItem);
         }
         activateDeleteButtons();
     })
