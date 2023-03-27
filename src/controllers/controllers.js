@@ -8,11 +8,42 @@ import { messagesManagerMongoose } from '../models/MessagesSchema.js';
 export const webRouter = Router();
 webRouter.get('/', async (req, res) => {
     try {
-        let products = await productsManagerMongoose.getAll();
-        // products = JSON.parse(products);
-        res.render('home', { hayProductos: products.length > 0, products });
+        let limit = req.query.limit ? parseInt(req.query.limit) : 10;
+        let page = req.query.page ? parseInt(req.query.page) : 1;
+        let sort = req.query.sort ? req.query.sort : ''
+
+        let options = {
+            page: page,
+            limit: limit,
+            // 'asc' set by default
+            sort: { price: sort === 'desc' ? -1 : 1 },
+            lean: true
+        };
+
+        let products = await productsManagerMongoose.getAll(options);
+
+        const payload = {
+            status: 'success',
+            products: products.docs,
+            totalPages: products.totalPages,
+            prevPage: products.prevPage,
+            nextPage: products.nextPage,
+            page: products.page,
+            hasPrevPage: products.hasPrevPage,
+            hasNextPage: products.hasNextPage,
+            prevLink: products.hasPrevPage ? `/?limit=${limit}&page=${products.prevPage}` : null,
+            nextLink: products.hasNextPage ? `/?limit=${limit}&page=${products.nextPage}` : null,
+            hayProductos: products.docs.length > 0, products
+        };
+
+        res.render('home', payload);
     } catch (err) {
-        console.log(err);
+        const payload = {
+            status: 'error',
+            message: err.message
+        };
+
+        res.render('error', payload);
     }
 });
 webRouter.get('/realtimeproducts', async (req, res) => {

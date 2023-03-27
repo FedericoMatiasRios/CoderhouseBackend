@@ -1,5 +1,6 @@
 import mongoose from 'mongoose'
 import { MongooseManager } from '../dao/managers-mongoose/MongooseManager.js'
+import mongoosePaginate from 'mongoose-paginate-v2';
 
 const productSchema = mongoose.Schema({
     title: {type: String, required: true}, 
@@ -11,6 +12,8 @@ const productSchema = mongoose.Schema({
     category: {type: String, required: true}, 
     thumbnails: [{type: Array, required: true}], 
 })
+
+productSchema.plugin(mongoosePaginate);
 
 const productDb = mongoose.model('products', productSchema)
 

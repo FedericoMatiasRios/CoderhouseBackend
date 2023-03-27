@@ -10,8 +10,8 @@ export class MongooseManager {
         return prod
     }
 
-    async getAll() {
-        return await this.#db.find().lean()
+    async getAll(options) {
+      return await this.#db.paginate({}, options);
     }
 
     async getById(id) {

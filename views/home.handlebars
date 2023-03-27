@@ -1,10 +1,20 @@
 <h1>Products</h1>
 {{#if hayProductos}}
-<ul>
-    {{#each products}}
-    <li>
-        {{this.title}}: ${{this.price}}, stock: {{this.stock}}
-    </li>
+  <ul>
+    {{#each products.docs}}
+        <li>{{this.title}}: ${{this.price}}, stock: {{this.stock}}</li>
     {{/each}}
-</ul>
+  </ul>
+
+  {{!-- pagination --}}
+  Total pages: {{totalPages}} <br>
+  Current page: {{page}} <br>
+  {{#if products.hasPrevPage}}
+    <a href="{{prevLink}}">Prev Page</a>
+  {{/if}}
+  {{#if products.hasNextPage}}
+    <a href="{{nextLink}}">Next Page</a>
+  {{/if}}
+{{else}}
+  <p>No hay productos disponibles</p>
 {{/if}}
