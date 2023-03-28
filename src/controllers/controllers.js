@@ -10,17 +10,25 @@ webRouter.get('/', async (req, res) => {
     try {
         let limit = req.query.limit ? parseInt(req.query.limit) : 10;
         let page = req.query.page ? parseInt(req.query.page) : 1;
-        let sort = req.query.sort ? req.query.sort : ''
+        let sort = req.query.sort ? req.query.sort : '';
+        let category = req.query.category ? req.query.category : '';
+
+        let query = {
+            stock: { $gt: 0 }
+        };
+
+        if (category) {
+            query = { category: category };
+        }
 
         let options = {
             page: page,
             limit: limit,
-            // 'asc' set by default
             sort: { price: sort === 'desc' ? -1 : 1 },
             lean: true
         };
 
-        let products = await productsManagerMongoose.getAll(options);
+        let products = await productsManagerMongoose.getAll(query, options);
 
         const payload = {
             status: 'success',
@@ -146,7 +154,7 @@ webRouter.get('/carts/:cid', async (req, res) => {
     try {
         let cart = await cartManagerMongoose.getByIdPopulate(req.params.cid);
         console.log(cart)
-        res.render('cartDetail', {cart});
+        res.render('cartDetail', { cart });
     } catch (err) {
         console.log(err);
     }
@@ -248,10 +256,15 @@ export async function controladorAddToCart(request, response) {
 }
 export async function controladorDeleteProductFromCart(request, response) {
     try {
-        await cartManagerMongoose.deleteProductFromCart(request.params.cid, request.params.pid);
-        response.status(201).send('Product deleted from cart!');
+        const result = await cartManagerMongoose.deleteProductFromCart(request.params.cid, request.params.pid);
+        if (result.nModified === 0) {
+            response.status(404).send('Product not found in cart!');
+        } else {
+            response.status(201).send('Product deleted from cart!');
+        }
     } catch (err) {
         console.log(err);
+        response.status(500).send('Internal server error');
     }
 }
 export async function controladorUpdateCartProducts(req, res) {
@@ -282,8 +295,8 @@ export async function controladorDeleteAllProducts(req, res) {
         const cartId = req.params.cid;
         await cartManagerMongoose.deleteAllProducts(cartId);
         res.status(200).send('All products deleted from cart!');
-      } catch (err) {
+    } catch (err) {
         console.log(err);
         res.status(500).send('Error deleting products from cart');
-      }
+    }
 }
