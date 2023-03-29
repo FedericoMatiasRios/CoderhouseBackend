@@ -63,7 +63,7 @@ export class MongooseManager {
     console.log('Cart updated:', updatedCart);
   }
   async deleteProductFromCart(cartId, productId) {
-    return await this.#db.updateOne({ _id: cartId }, { $pull: { products: { _id: productId } } }).lean();
+    return await this.#db.updateOne({ _id: cartId }, { $pull: { products: { product: productId } } }).lean();
   }
   async updateCartProducts(cartId, products) {
     return await this.#db.updateOne({ _id: cartId }, { $set: { products: products } }).lean();
