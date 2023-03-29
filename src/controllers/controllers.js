@@ -103,17 +103,25 @@ webRouter.get('/products', async (req, res) => {
     try {
         let limit = req.query.limit ? parseInt(req.query.limit) : 10;
         let page = req.query.page ? parseInt(req.query.page) : 1;
-        let sort = req.query.sort ? req.query.sort : ''
+        let sort = req.query.sort ? req.query.sort : '';
+        let category = req.query.category ? req.query.category : '';
+
+        let query = {
+            stock: { $gt: 0 }
+        };
+
+        if (category) {
+            query = { category: category };
+        }
 
         let options = {
             page: page,
             limit: limit,
-            // 'asc' set by default
             sort: { price: sort === 'desc' ? -1 : 1 },
             lean: true
         };
 
-        let products = await productsManagerMongoose.getAll(options);
+        let products = await productsManagerMongoose.getAll(query, options);
 
         const payload = {
             status: 'success',
