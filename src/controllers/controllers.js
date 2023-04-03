@@ -4,6 +4,7 @@ import { Router } from 'express';
 import { productsManagerMongoose } from '../models/ProductSchema.js';
 import { cartManagerMongoose } from '../models/CartSchema.js';
 import { messagesManagerMongoose } from '../models/MessagesSchema.js';
+import { userModel } from '../models/UserSchema.js';
 
 export const webRouter = Router();
 webRouter.get('/', async (req, res) => {
@@ -30,6 +31,9 @@ webRouter.get('/', async (req, res) => {
 
         let products = await productsManagerMongoose.getAll(query, options);
 
+        const userId = req.session.userId;
+        const user = await userModel.findOne({ _id: userId }).lean();
+
         const payload = {
             status: 'success',
             products: products.docs,
@@ -41,7 +45,8 @@ webRouter.get('/', async (req, res) => {
             hasNextPage: products.hasNextPage,
             prevLink: products.hasPrevPage ? `/?limit=${limit}&page=${products.prevPage}` : null,
             nextLink: products.hasNextPage ? `/?limit=${limit}&page=${products.nextPage}` : null,
-            hayProductos: products.docs.length > 0, products
+            hayProductos: products.docs.length > 0, products,
+            user
         };
 
         res.render('home', payload);
@@ -308,3 +313,93 @@ export async function controladorDeleteAllProducts(req, res) {
         res.status(500).send('Error deleting products from cart');
     }
 }
+
+// Session controllers
+
+webRouter.get('/login', (req, res) => {
+    if (req.session.userId) {
+        res.redirect('/');
+    } else {
+        res.render('login')
+    }
+})
+
+webRouter.post('/login', async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        const user = await userModel.findOne({ email: email });
+        if (!user || user.password !== password) {
+            return res.render('login', { error: 'Invalid email or password' });
+        }
+
+        // Create or update the session with the user ID
+        if (!req.session) {
+            req.session = {};
+        }
+        req.session.userId = user._id;
+
+        res.redirect('/');
+    } catch (error) {
+        console.error(error);
+        res.render('error');
+    }
+});
+
+webRouter.get('/register', (req, res) => {
+    if (req.session.userId) {
+        res.redirect('/');
+    } else {
+        res.render('register')
+    }
+})
+
+webRouter.post('/register', async (req, res) => {
+    try {
+        const { first_name, last_name, email, age, password } = req.body;
+        const existingUser = await userModel.findOne({ email });
+        if (existingUser) {
+            return res.render('register', { error: 'Este email ya ha sido registrado' });
+        }
+        const user = new userModel({ first_name, last_name, email, age, password });
+        await user.save();
+        res.redirect('/');
+    } catch (error) {
+        console.error(error);
+        res.redirect('/register');
+    }
+});
+
+webRouter.get('/logout', (req, res) => {
+    req.session.destroy(err => {
+        if (err) {
+            res.json({ status: 'Logout ERROR', body: err })
+        } else {
+            res.send('Logout ok!')
+        }
+    })
+})
+
+// utilities
+export const setDefaultUserId = (req, res, next) => {
+    if (!req.session) {
+        req.session = {};
+    }
+
+    if (!req.session.userId) {
+        req.session.userId = null;
+    }
+
+    next();
+};
+
+export const requireAuth = (req, res, next) => {
+    if (req.path === '/login' || req.path === '/register') {
+        return next();
+    }
+
+    if (req.session.userId) {
+        return next();
+    }
+
+    res.redirect('/login');
+};

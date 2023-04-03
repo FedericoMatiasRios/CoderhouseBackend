@@ -1,21 +1,25 @@
+{{#if user}}
+Bienvenid@ {{user.first_name}} {{user.last_name}}! email: {{user.email}}, edad: {{user.age}}.
+{{/if}}
+
 <h1>Products</h1>
 {{#if hayProductos}}
-  <ul>
-    {{#each products.docs}}
-        
-        <li>{{this.title}}: ${{this.price}}, stock: {{this.stock}} <a href="./products/{{this._id}}">Ver Producto</a></li>
-    {{/each}}
-  </ul>
+<ul>
+  {{#each products.docs}}
 
-  {{!-- pagination --}}
-  Total pages: {{totalPages}} <br>
-  Current page: {{page}} <br>
-  {{#if products.hasPrevPage}}
-    <a href="{{prevLink}}">Prev Page</a>
-  {{/if}}
-  {{#if products.hasNextPage}}
-    <a href="{{nextLink}}">Next Page</a>
-  {{/if}}
+  <li>{{this.title}}: ${{this.price}}, stock: {{this.stock}} <a href="./products/{{this._id}}">Ver Producto</a></li>
+  {{/each}}
+</ul>
+
+{{!-- pagination --}}
+Total pages: {{totalPages}} <br>
+Current page: {{page}} <br>
+{{#if products.hasPrevPage}}
+<a href="{{prevLink}}">Prev Page</a>
+{{/if}}
+{{#if products.hasNextPage}}
+<a href="{{nextLink}}">Next Page</a>
+{{/if}}
 {{else}}
-  <p>No hay productos disponibles</p>
+<p>No hay productos disponibles</p>
 {{/if}}

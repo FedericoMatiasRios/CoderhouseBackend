@@ -1,0 +1,22 @@
+<h1>Registro</h1>
+{{#if error}}
+  <div class="alert alert-danger">{{error}}</div>
+{{/if}}
+<form id="registerForm" method="POST" action="/register">
+    <label for="input_first_name">Nombre</label>
+    <input type="text" name="first_name" id="input_first_name" required><br>
+
+    <label for="input_last_name">Apellido</label>
+    <input type="text" name="last_name" id="input_last_name" required><br>
+
+    <label for="input_email">Email</label>
+    <input type="email" name="email" id="input_email" required><br>
+
+    <label for="input_age">Edad</label>
+    <input type="number" name="age" id="input_age" required><br>
+
+    <label for="input_password">Contraseña</label>
+    <input type="password" name="password" id="input_password" required><br>
+
+    <button type="submit">Registrarme</button>
+</form>
