@@ -34,6 +34,14 @@ webRouter.get('/', async (req, res) => {
         const userId = req.session.userId;
         const user = await userModel.findOne({ _id: userId }).lean();
 
+        let rol;
+
+        if (user.email == 'adminCoder@coder.com') {
+            rol = 'Admin';
+        } else {
+            rol = 'User';
+        }
+
         const payload = {
             status: 'success',
             products: products.docs,
@@ -46,7 +54,8 @@ webRouter.get('/', async (req, res) => {
             prevLink: products.hasPrevPage ? `/?limit=${limit}&page=${products.prevPage}` : null,
             nextLink: products.hasNextPage ? `/?limit=${limit}&page=${products.nextPage}` : null,
             hayProductos: products.docs.length > 0, products,
-            user
+            user,
+            rol
         };
 
         res.render('home', payload);
@@ -341,7 +350,7 @@ webRouter.post('/login', async (req, res) => {
         res.redirect('/');
     } catch (error) {
         console.error(error);
-        res.render('error');
+        res.render('login', { error: 'error' })
     }
 });
 
@@ -372,9 +381,9 @@ webRouter.post('/register', async (req, res) => {
 webRouter.get('/logout', (req, res) => {
     req.session.destroy(err => {
         if (err) {
-            res.json({ status: 'Logout ERROR', body: err })
+            res.render('login', { error: err })
         } else {
-            res.send('Logout ok!')
+            res.redirect('/login')
         }
     })
 })
