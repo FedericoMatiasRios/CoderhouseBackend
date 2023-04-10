@@ -9,65 +9,65 @@ import { userModel } from '../models/UserSchema.js';
 export const webRouter = Router();
 webRouter.get('/', async (req, res) => {
     try {
-        let limit = req.query.limit ? parseInt(req.query.limit) : 10;
-        let page = req.query.page ? parseInt(req.query.page) : 1;
-        let sort = req.query.sort ? req.query.sort : '';
-        let category = req.query.category ? req.query.category : '';
-
-        let query = {
-            stock: { $gt: 0 }
-        };
-
-        if (category) {
-            query = { category: category };
-        }
-
-        let options = {
-            page: page,
-            limit: limit,
-            sort: { price: sort === 'desc' ? -1 : 1 },
-            lean: true
-        };
-
-        let products = await productsManagerMongoose.getAll(query, options);
-
-        const userId = req.session.userId;
-        const user = await userModel.findOne({ _id: userId }).lean();
-
-        let rol;
-
-        if (user.email == 'adminCoder@coder.com') {
-            rol = 'Admin';
-        } else {
-            rol = 'User';
-        }
-
-        const payload = {
-            status: 'success',
-            products: products.docs,
-            totalPages: products.totalPages,
-            prevPage: products.prevPage,
-            nextPage: products.nextPage,
-            page: products.page,
-            hasPrevPage: products.hasPrevPage,
-            hasNextPage: products.hasNextPage,
-            prevLink: products.hasPrevPage ? `/?limit=${limit}&page=${products.prevPage}` : null,
-            nextLink: products.hasNextPage ? `/?limit=${limit}&page=${products.nextPage}` : null,
-            hayProductos: products.docs.length > 0, products,
-            user,
-            rol
-        };
-
-        res.render('home', payload);
+      let limit = req.query.limit ? parseInt(req.query.limit) : 10;
+      let page = req.query.page ? parseInt(req.query.page) : 1;
+      let sort = req.query.sort ? req.query.sort : '';
+      let category = req.query.category ? req.query.category : '';
+  
+      let query = {
+        stock: { $gt: 0 }
+      };
+  
+      if (category) {
+        query = { category: category };
+      }
+  
+      let options = {
+        page: page,
+        limit: limit,
+        sort: { price: sort === 'desc' ? -1 : 1 },
+        lean: true
+      };
+  
+      let products = await productsManagerMongoose.getAll(query, options);
+  
+      const userId = req.user;
+      let user = null;
+      let rol = 'User';
+  
+      if (userId) {
+        user = await userModel.findById(userId).lean();
+        rol = (user.email === 'adminCoder@coder.com') ? 'Admin' : 'User';
+      }
+  
+      const payload = {
+        status: 'success',
+        products: products.docs,
+        totalPages: products.totalPages,
+        prevPage: products.prevPage,
+        nextPage: products.nextPage,
+        page: products.page,
+        hasPrevPage: products.hasPrevPage,
+        hasNextPage: products.hasNextPage,
+        prevLink: products.hasPrevPage ? `/?limit=${limit}&page=${products.prevPage}` : null,
+        nextLink: products.hasNextPage ? `/?limit=${limit}&page=${products.nextPage}` : null,
+        hayProductos: products.docs.length > 0, 
+        products,
+        user,
+        rol
+      };
+  
+      res.render('home', payload);
     } catch (err) {
-        const payload = {
-            status: 'error',
-            message: err.message
-        };
-
-        res.render('error', payload);
+      const payload = {
+        status: 'error',
+        message: err.message
+      };
+      console.log(payload);
+  
+      res.render('error', payload);
     }
-});
+  });
 webRouter.get('/realtimeproducts', async (req, res) => {
     try {
         let limit = req.query.limit ? parseInt(req.query.limit) : 10;
@@ -333,59 +333,17 @@ webRouter.get('/login', (req, res) => {
     }
 })
 
-webRouter.post('/login', async (req, res) => {
-    try {
-        const { email, password } = req.body;
-        const user = await userModel.findOne({ email: email });
-        if (!user || user.password !== password) {
-            return res.render('login', { error: 'Invalid email or password' });
-        }
-
-        // Create or update the session with the user ID
-        if (!req.session) {
-            req.session = {};
-        }
-        req.session.userId = user._id;
-
-        res.redirect('/');
-    } catch (error) {
-        console.error(error);
-        res.render('login', { error: 'error' })
-    }
-});
-
-webRouter.get('/register', (req, res) => {
-    if (req.session.userId) {
-        res.redirect('/');
-    } else {
-        res.render('register')
-    }
-})
-
-webRouter.post('/register', async (req, res) => {
-    try {
-        const { first_name, last_name, email, age, password } = req.body;
-        const existingUser = await userModel.findOne({ email });
-        if (existingUser) {
-            return res.render('register', { error: 'Este email ya ha sido registrado' });
-        }
-        const user = new userModel({ first_name, last_name, email, age, password });
-        await user.save();
-        res.redirect('/');
-    } catch (error) {
-        console.error(error);
-        res.redirect('/register');
-    }
-});
 
 webRouter.get('/logout', (req, res) => {
-    req.session.destroy(err => {
-        if (err) {
-            res.render('login', { error: err })
-        } else {
-            res.redirect('/login')
-        }
-    })
+    req.logout(() => {
+        req.session.destroy(err => {
+            if (err) {
+                res.render('login', { error: err })
+            } else {
+                res.redirect('/login')
+            }
+        })
+    });
 })
 
 // utilities
@@ -402,13 +360,8 @@ export const setDefaultUserId = (req, res, next) => {
 };
 
 export const requireAuth = (req, res, next) => {
-    if (req.path === '/login' || req.path === '/register') {
-        return next();
+    if (!req.isAuthenticated() && req.path !== '/login' && req.path !== '/register') {
+      return res.redirect('/login');
     }
-
-    if (req.session.userId) {
-        return next();
-    }
-
-    res.redirect('/login');
-};
+    return next();
+  };
