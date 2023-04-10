@@ -6,6 +6,14 @@ const userSchema = new mongoose.Schema({
     email: { type: String, required: true },
     age: { type: Number, required: true },
     password: { type: String, default: true },
+    role: { type: String, enum: ['admin', 'user'], required: false, default: 'user' }
 })
 
-export const userModel = mongoose.model('users', userSchema)
+userSchema.pre('save', function (next) {
+    if (this.email === 'adminCoder@coder.com') {
+        this.role = 'admin';
+    }
+    next();
+});
+
+export const userModel = mongoose.model('users', userSchema);

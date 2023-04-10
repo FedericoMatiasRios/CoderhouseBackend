@@ -34,14 +34,6 @@ webRouter.get('/', async (req, res) => {
         const userId = req.session.userId;
         const user = await userModel.findOne({ _id: userId }).lean();
 
-        let rol;
-
-        if (user.email == 'adminCoder@coder.com') {
-            rol = 'Admin';
-        } else {
-            rol = 'User';
-        }
-
         const payload = {
             status: 'success',
             products: products.docs,
@@ -54,8 +46,7 @@ webRouter.get('/', async (req, res) => {
             prevLink: products.hasPrevPage ? `/?limit=${limit}&page=${products.prevPage}` : null,
             nextLink: products.hasNextPage ? `/?limit=${limit}&page=${products.nextPage}` : null,
             hayProductos: products.docs.length > 0, products,
-            user,
-            rol
+            user
         };
 
         res.render('home', payload);
@@ -364,12 +355,12 @@ webRouter.get('/register', (req, res) => {
 
 webRouter.post('/register', async (req, res) => {
     try {
-        const { first_name, last_name, email, age, password } = req.body;
+        const { first_name, last_name, email, age, password, role } = req.body;
         const existingUser = await userModel.findOne({ email });
         if (existingUser) {
             return res.render('register', { error: 'Este email ya ha sido registrado' });
         }
-        const user = new userModel({ first_name, last_name, email, age, password });
+        const user = new userModel({ first_name, last_name, email, age, password, role });
         await user.save();
         res.redirect('/');
     } catch (error) {
