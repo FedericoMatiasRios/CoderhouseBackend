@@ -33,11 +33,9 @@ webRouter.get('/', async (req, res) => {
   
       const userId = req.user;
       let user = null;
-      let rol = 'User';
   
       if (userId) {
         user = await userModel.findById(userId).lean();
-        rol = (user.email === 'adminCoder@coder.com') ? 'Admin' : 'User';
       }
   
       const payload = {
@@ -53,8 +51,7 @@ webRouter.get('/', async (req, res) => {
         nextLink: products.hasNextPage ? `/?limit=${limit}&page=${products.nextPage}` : null,
         hayProductos: products.docs.length > 0, 
         products,
-        user,
-        rol
+        user
       };
   
       res.render('home', payload);

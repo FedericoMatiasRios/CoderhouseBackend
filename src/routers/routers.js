@@ -68,7 +68,11 @@ passport.use(new LocalStrategy({ usernameField: 'email', passReqToCallback: true
       if (!user) {
         return done(null, false, { message: 'Invalid email or password' });
       }
+      console.log('password: ' + password)
+      console.log(user.password)
+      console.log('Before bcrypt compare');
       const isMatch = await bcrypt.compare(password, user.password);
+      console.log('After bcrypt compare');      
       if (!isMatch) {
         return done(null, false, { message: 'Invalid email or password' });
       }
@@ -214,8 +218,7 @@ webRouter.post('/register', async (req, res) => {
         return res.redirect('/register');
       }
   
-      const hashedPassword = await bcrypt.hash(password, 10);
-      const user = new userModel({ first_name, last_name, email, age, password: hashedPassword });
+      const user = new userModel({ first_name, last_name, email, age, password });
       await user.save();
       
       req.flash('success', 'Registro exitoso');
