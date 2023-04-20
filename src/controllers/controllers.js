@@ -9,6 +9,8 @@ import { Strategy as GithubStrategy } from 'passport-github2';
 import MongoStore from 'connect-mongo';
 import session from 'express-session';
 import passport from 'passport';
+import { Strategy as LocalStrategy } from 'passport-local';
+import bcrypt from 'bcrypt';
 
 let messages = {};
 
@@ -111,7 +113,7 @@ webRouter.get('/messages', async (req, res) => {
         let options = {
             lean: true
         };
-        let messages = await messagesManagerMongoose.getAll(options);
+        messages = await messagesManagerMongoose.getAll(options);
         res.render('chat', { hayMensajes: messages.docs.length > 0, messages });
     } catch (err) {
         console.log(err);
@@ -339,65 +341,60 @@ export const sessionMiddleware = session({
 
 //login
 
-//export function renderLoginPage(req, res) {
-//    if (req.user) {
-//        res.redirect('/');
-//    } else {
-//        res.render('login', { messages: req.flash(), githubAuthUrl: '/login/github' });
-//    }
-//}
+export function renderLoginPage(req, res) {
+    if (req.user) {
+        res.redirect('/');
+    } else {
+        res.render('login', { messages: req.flash(), githubAuthUrl: '/login/github' });
+    }
+}
 
-//export const loginPost = passport.authenticate('local', {
-//    failureRedirect: '/login',
-//    failureFlash: true
-//}, (req, res) => {
-//    if (req.user) {
-//        req.flash('success', 'Authentication succeeded');
-//        res.redirect('/');
-//    } else {
-//        req.flash('error', 'Invalid email or password');
-//        res.redirect('/login');
-//    }
-//});
+export function handleLogin(req, res) {
+  passport.authenticate('local', {
+    failureRedirect: '/login',
+    failureFlash: true
+  })(req, res, () => {
+    if (req.user) {
+      req.flash('success', 'Authentication succeeded');
+      res.redirect('/');
+    } else {
+      req.flash('error', 'Invalid email or password');
+      res.redirect('/login');
+    }
+  });
+}
 
 //register
 
-//export const showRegisterPage = (req, res) => {
-//    if (req.user) {
-//        res.redirect('/');
-//    } else {
-//        res.render('register', { messages: req.flash() });
-//    }
-//}
-
-//export const registerUser = async (req, res) => {
-//    try {
-//        const { first_name, last_name, email, age, password } = req.body;
-//        const existingUser = await userModel.findOne({ email });
-
-//        if (existingUser) {
-//            req.flash('error', 'Este email ya ha sido registrado');
-//            return res.redirect('/register');
-//        }
-
-//        const user = new userModel({ first_name, last_name, email, age, password });
-//        await user.save();
-
-webRouter.post('/register', async (req, res) => {
-    try {
-        const { first_name, last_name, email, age, password, role } = req.body;
-        const existingUser = await userModel.findOne({ email });
-        if (existingUser) {
-            return res.render('register', { error: 'Este email ya ha sido registrado' });
-        }
-        const user = new userModel({ first_name, last_name, email, age, password, role });
-        await user.save();
+export function showRegisterPage(req, res) {
+    if (req.user) {
         res.redirect('/');
-    } catch (error) {
-        console.error(error);
-        res.redirect('/register');
+    } else {
+        res.render('register', { messages: req.flash() });
     }
-});
+}
+
+export async function registerUser(req, res) {
+    try {
+      const { first_name, last_name, email, age, password } = req.body;
+      const existingUser = await userModel.findOne({ email });
+  
+      if (existingUser) {
+        req.flash('error', 'Este email ya ha sido registrado');
+        return res.redirect('/register');
+      }
+  
+      const user = new userModel({ first_name, last_name, email, age, password });
+      await user.save();
+  
+      req.flash('success', 'Registro exitoso');
+      res.redirect('/');
+    } catch (error) {
+      console.error(error);
+      req.flash('error', 'Hubo un error al registrarse');
+      res.redirect('/register');
+    }
+  }
 
 webRouter.get('/logout', (req, res) => {
     req.logout(() => {
@@ -412,29 +409,29 @@ webRouter.get('/logout', (req, res) => {
 })
 
 //passport
-//export const localStrategy = new LocalStrategy({ usernameField: 'email', passReqToCallback: true }, async (req, email, password, done) => {
-//    console.log('LocalStrategy called');
+export const localStrategy = new LocalStrategy({ usernameField: 'email', passReqToCallback: true }, async (req, email, password, done) => {
+    console.log('LocalStrategy called');
 
-//    try {
-//        const user = await userModel.findOne({ email: email });
-//        if (!user) {
-//            return done(null, false, { message: 'Invalid email or password' });
-//        }
-//        console.log('password: ' + password)
-//        console.log(user.password)
-//        console.log('Before bcrypt compare');
-//        const isMatch = await bcrypt.compare(password, user.password);
-//        console.log('After bcrypt compare');
-//        if (!isMatch) {
-//            return done(null, false, { message: 'Invalid email or password' });
-//        }
-//        req.flash('success', 'Logged in successfully!');
-//        return done(null, user);
-//    } catch (err) {
-//        console.error(err);
-//        return done(err);
-//    }
-//})
+    try {
+        const user = await userModel.findOne({ email: email });
+        if (!user) {
+            return done(null, false, { message: 'Invalid email or password' });
+        }
+        console.log('password: ' + password)
+        console.log(user.password)
+        console.log('Before bcrypt compare');
+        const isMatch = await bcrypt.compare(password, user.password);
+        console.log('After bcrypt compare');
+        if (!isMatch) {
+            return done(null, false, { message: 'Invalid email or password' });
+        }
+        req.flash('success', 'Logged in successfully!');
+        return done(null, user);
+    } catch (err) {
+        console.error(err);
+        return done(err);
+    }
+})
 
 export const serializeUserController = (user, done) => {
     done(null, user._id);
