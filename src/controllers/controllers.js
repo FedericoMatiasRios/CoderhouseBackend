@@ -5,8 +5,15 @@ import { productsManagerMongoose } from '../models/ProductSchema.js';
 import { cartManagerMongoose } from '../models/CartSchema.js';
 import { messagesManagerMongoose } from '../models/MessagesSchema.js';
 import { userModel } from '../models/UserSchema.js';
+import { Strategy as GithubStrategy } from 'passport-github2';
+import MongoStore from 'connect-mongo';
+import session from 'express-session';
+import passport from 'passport';
+
+let messages = {};
 
 export const webRouter = Router();
+
 webRouter.get('/', async (req, res) => {
     try {
         let limit = req.query.limit ? parseInt(req.query.limit) : 10;
@@ -31,8 +38,12 @@ webRouter.get('/', async (req, res) => {
 
         let products = await productsManagerMongoose.getAll(query, options);
 
-        const userId = req.session.userId;
-        const user = await userModel.findOne({ _id: userId }).lean();
+        const userId = req.user;
+        let user = null;
+
+        if (userId) {
+            user = await userModel.findById(userId).lean();
+        }
 
         const payload = {
             status: 'success',
@@ -45,7 +56,8 @@ webRouter.get('/', async (req, res) => {
             hasNextPage: products.hasNextPage,
             prevLink: products.hasPrevPage ? `/?limit=${limit}&page=${products.prevPage}` : null,
             nextLink: products.hasNextPage ? `/?limit=${limit}&page=${products.nextPage}` : null,
-            hayProductos: products.docs.length > 0, products,
+            hayProductos: products.docs.length > 0,
+            products,
             user
         };
 
@@ -55,6 +67,7 @@ webRouter.get('/', async (req, res) => {
             status: 'error',
             message: err.message
         };
+        console.log(payload);
 
         res.render('error', payload);
     }
@@ -314,44 +327,61 @@ export async function controladorDeleteAllProducts(req, res) {
     }
 }
 
-// Session controllers
-
-webRouter.get('/login', (req, res) => {
-    if (req.session.userId) {
-        res.redirect('/');
-    } else {
-        res.render('login')
-    }
-})
-
-webRouter.post('/login', async (req, res) => {
-    try {
-        const { email, password } = req.body;
-        const user = await userModel.findOne({ email: email });
-        if (!user || user.password !== password) {
-            return res.render('login', { error: 'Invalid email or password' });
-        }
-
-        // Create or update the session with the user ID
-        if (!req.session) {
-            req.session = {};
-        }
-        req.session.userId = user._id;
-
-        res.redirect('/');
-    } catch (error) {
-        console.error(error);
-        res.render('login', { error: 'error' })
-    }
+//session
+export const sessionMiddleware = session({
+    store: MongoStore.create({
+        mongoUrl: `mongodb+srv://federicomatiasrios:2407Gaee2iAhAxPQ@ecommerce.spmtua5.mongodb.net/?retryWrites=true&w=majority`
+    }),
+    secret: 'shhhh',
+    resave: false,
+    saveUninitialized: false
 });
 
-webRouter.get('/register', (req, res) => {
-    if (req.session.userId) {
-        res.redirect('/');
-    } else {
-        res.render('register')
-    }
-})
+//login
+
+//export function renderLoginPage(req, res) {
+//    if (req.user) {
+//        res.redirect('/');
+//    } else {
+//        res.render('login', { messages: req.flash(), githubAuthUrl: '/login/github' });
+//    }
+//}
+
+//export const loginPost = passport.authenticate('local', {
+//    failureRedirect: '/login',
+//    failureFlash: true
+//}, (req, res) => {
+//    if (req.user) {
+//        req.flash('success', 'Authentication succeeded');
+//        res.redirect('/');
+//    } else {
+//        req.flash('error', 'Invalid email or password');
+//        res.redirect('/login');
+//    }
+//});
+
+//register
+
+//export const showRegisterPage = (req, res) => {
+//    if (req.user) {
+//        res.redirect('/');
+//    } else {
+//        res.render('register', { messages: req.flash() });
+//    }
+//}
+
+//export const registerUser = async (req, res) => {
+//    try {
+//        const { first_name, last_name, email, age, password } = req.body;
+//        const existingUser = await userModel.findOne({ email });
+
+//        if (existingUser) {
+//            req.flash('error', 'Este email ya ha sido registrado');
+//            return res.redirect('/register');
+//        }
+
+//        const user = new userModel({ first_name, last_name, email, age, password });
+//        await user.save();
 
 webRouter.post('/register', async (req, res) => {
     try {
@@ -370,16 +400,129 @@ webRouter.post('/register', async (req, res) => {
 });
 
 webRouter.get('/logout', (req, res) => {
-    req.session.destroy(err => {
-        if (err) {
-            res.render('login', { error: err })
-        } else {
-            res.redirect('/login')
-        }
-    })
+    req.logout(() => {
+        req.session.destroy(err => {
+            if (err) {
+                res.render('login', { error: err })
+            } else {
+                res.redirect('/login')
+            }
+        })
+    });
 })
 
-// utilities
+//passport
+//export const localStrategy = new LocalStrategy({ usernameField: 'email', passReqToCallback: true }, async (req, email, password, done) => {
+//    console.log('LocalStrategy called');
+
+//    try {
+//        const user = await userModel.findOne({ email: email });
+//        if (!user) {
+//            return done(null, false, { message: 'Invalid email or password' });
+//        }
+//        console.log('password: ' + password)
+//        console.log(user.password)
+//        console.log('Before bcrypt compare');
+//        const isMatch = await bcrypt.compare(password, user.password);
+//        console.log('After bcrypt compare');
+//        if (!isMatch) {
+//            return done(null, false, { message: 'Invalid email or password' });
+//        }
+//        req.flash('success', 'Logged in successfully!');
+//        return done(null, user);
+//    } catch (err) {
+//        console.error(err);
+//        return done(err);
+//    }
+//})
+
+export const serializeUserController = (user, done) => {
+    done(null, user._id);
+};
+
+export const deserializeUserController = async (id, done) => {
+    console.log('deserializeUser called with id:', id);
+    try {
+        const user = await userModel.findById(id);
+        if (!user) {
+            return done(null, false);
+        }
+        return done(null, user);
+    } catch (err) {
+        console.error(err);
+        return done(err);
+    }
+};
+
+//passport github login
+function mapGithubUserToLocalUser(githubUser) {
+    console.log(githubUser)
+    const email = githubUser._json.email != null ? githubUser._json.email : `${githubUser.username}@github.com`;
+    const firstName = githubUser.displayName != null ? githubUser.displayName : 'Unknown';
+    const lastName = githubUser.id != null ? githubUser.id : 'Unknown';
+    const age = 0;
+    const password = 'generateRandomLater';
+
+    return {
+        email,
+        first_name: firstName,
+        last_name: lastName,
+        age,
+        password,
+    };
+}
+
+const GITHUB_CLIENT_ID = 'Iv1.84402c963ad0e301';
+const GITHUB_CLIENT_SECRET = 'b6b7cf64ccfc65a9fbfd885a39fc777ac27f4e24';
+
+export const githubStrategy = new GithubStrategy({
+    clientID: GITHUB_CLIENT_ID,
+    clientSecret: GITHUB_CLIENT_SECRET,
+    callbackURL: "http://localhost:8080/login/github/callback"
+},
+    async function (accessToken, refreshToken, githubUser, done) {
+        // asynchronous verification, for effect...
+        process.nextTick(async function () {
+
+            // Map the Github user to your local user schema
+            const user = mapGithubUserToLocalUser(githubUser);
+
+            try {
+                // Check if the user already exists in the database
+                const email = githubUser._json.email != null ? githubUser._json.email : `${githubUser.username}@github.com`;
+                const existingUser = await userModel.findOne({ email: email });
+
+                if (existingUser) {
+                    console.log('user already exists, updated')
+                    // Update the existing user with the latest Github info
+                    const updatedUser = await userModel.findOneAndUpdate(
+                        { email: email },
+                        user,
+                        { new: true }
+                    );
+                    return done(null, updatedUser);
+                } else {
+                    console.log('New github user created')
+                    // Save the user to the database and return it
+                    const createdUser = await userModel.create(user);
+                    return done(null, createdUser);
+                }
+            } catch (err) {
+                return done(err);
+            }
+        });
+    }
+)
+
+export const githubAuth = () => passport.authenticate('github', { scope: ['user:email'] });
+
+export const githubAuthCallback = passport.authenticate('github', { failureRedirect: '/login' });
+
+export const githubAuthCallbackHandler = (req, res) => {
+    res.redirect('/');
+};
+
+//utilities
 export const setDefaultUserId = (req, res, next) => {
     if (!req.session) {
         req.session = {};
@@ -393,13 +536,8 @@ export const setDefaultUserId = (req, res, next) => {
 };
 
 export const requireAuth = (req, res, next) => {
-    if (req.path === '/login' || req.path === '/register') {
-        return next();
+    if (!req.isAuthenticated() && req.path !== '/login' && req.path !== '/register') {
+        return res.redirect('/login');
     }
-
-    if (req.session.userId) {
-        return next();
-    }
-
-    res.redirect('/login');
+    return next();
 };

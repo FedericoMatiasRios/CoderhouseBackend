@@ -1,6 +1,10 @@
 <h1>Login</h1>
-{{#if error}}
-  <div class="alert alert-danger">{{error}}</div>
+{{#if messages.error}}
+  <div class="alert alert-danger">{{messages.error}}</div>
+{{/if}}
+
+{{#if messages.success}}
+  <div class="alert alert-success">{{messages.success}}</div>
 {{/if}}
 <form id="loginForm" method="POST" action="/login">
     <label for="input_email">Email</label><input type="text" name="email" id="input_email"><br>
@@ -9,3 +13,5 @@
 </form>
 <br>
 <a href="./register">Registrarme</a>
+<br><br>
+<span>Login with: <a href="{{githubAuthUrl}}">GitHub</a></span>

@@ -1,9 +1,12 @@
-import express from 'express'
-import { engine } from 'express-handlebars'
-import { controladorProductsGet, controladorId, controladorProductsPost, controladorGetAllCarts, controladorNewCart, controladorGetCart, controladorAddToCart, webRouter, controladorDeleteProduct, controladorUpdateProduct, controladorDeleteProductFromCart, controladorUpdateCartProducts, controladorUpdateCartProductQty, controladorDeleteAllProducts, setDefaultUserId, requireAuth } from '../controllers/controllers.js';
+import express from 'express';
+import { engine } from 'express-handlebars';
+import { controladorProductsGet, controladorId, controladorProductsPost, controladorGetAllCarts, controladorNewCart, controladorGetCart, controladorAddToCart, webRouter, controladorDeleteProduct, controladorUpdateProduct, controladorDeleteProductFromCart, controladorUpdateCartProducts, controladorUpdateCartProductQty, controladorDeleteAllProducts, setDefaultUserId, requireAuth, serializeUserController, deserializeUserController, githubStrategy, githubAuth, githubAuthCallback, githubAuthCallbackHandler, sessionMiddleware } from '../controllers/controllers.js';
 import cookieParser from 'cookie-parser';
-import MongoStore from 'connect-mongo';
-import session from 'express-session';
+import passport from 'passport';
+import flash from 'connect-flash';
+import { Strategy as LocalStrategy } from 'passport-local';
+import bcrypt from 'bcrypt';
+import { userModel } from '../models/UserSchema.js';
 
 export const app = express()
 
@@ -33,21 +36,106 @@ app.put('/api/carts/:cid/products/:pid', controladorUpdateCartProductQty)
 app.delete('/api/carts/:cid', controladorDeleteAllProducts)
 
 //session
-app.use(session({
-    store: MongoStore.create({
-        mongoUrl: `mongodb+srv://federicomatiasrios:2407Gaee2iAhAxPQ@ecommerce.spmtua5.mongodb.net/?retryWrites=true&w=majority`
-    }),
-    secret: 'shhhh',
-    resave: false,
-    saveUninitialized: false
-}))
+app.use(sessionMiddleware);
 
-app.get('/login', webRouter)
-app.post('/login', webRouter)
-app.get('/register', webRouter)
-app.post('/register', webRouter)
+app.use(flash());
+
+//passport
+app.use(passport.initialize());
+app.use(passport.session());
+
+//passport.use(localStrategy);
+passport.use(new LocalStrategy({ usernameField: 'email', passReqToCallback: true }, async (req, email, password, done) => {
+  console.log('LocalStrategy called');
+
+  try {
+    const user = await userModel.findOne({ email: email });
+    if (!user) {
+      return done(null, false, { message: 'Invalid email or password' });
+    }
+    console.log('password: ' + password)
+    console.log(user.password)
+    console.log('Before bcrypt compare');
+    const isMatch = await bcrypt.compare(password, user.password);
+    console.log('After bcrypt compare');
+    if (!isMatch) {
+      return done(null, false, { message: 'Invalid email or password' });
+    }
+    req.flash('success', 'Logged in successfully!');
+    return done(null, user);
+  } catch (err) {
+    console.error(err);
+    return done(err);
+  }
+}))
+passport.serializeUser(serializeUserController);
+passport.deserializeUser(deserializeUserController);
+
+//github login
+passport.use(githubStrategy);
+app.get('/login/github', githubAuth());
+app.get('/login/github/callback', githubAuthCallback, githubAuthCallbackHandler);
+
+//session login
+//app.get('/login', renderLoginPage);
+app.get('/login', (req, res) => {
+  if (req.user) {
+    res.redirect('/');
+  } else {
+    res.render('login', { messages: req.flash(), githubAuthUrl: '/login/github' });
+  }
+});
+//app.post('/login', loginPost);
+app.post('/login', passport.authenticate('local', {
+  failureRedirect: '/login',
+  failureFlash: true
+}), (req, res) => {
+  if (req.user) {
+    req.flash('success', 'Authentication succeeded');
+    res.redirect('/');
+  } else {
+    req.flash('error', 'Invalid email or password');
+    res.redirect('/login');
+  }
+});
+
+//session register
+//webRouter.get('/register', showRegisterPage);
+webRouter.get('/register', (req, res) => {
+  if (req.user) {
+    res.redirect('/');
+  } else {
+    res.render('register', { messages: req.flash() });
+  }
+});
+
+//webRouter.post('/register', registerUser);
+webRouter.post('/register', async (req, res) => {
+  try {
+    const { first_name, last_name, email, age, password } = req.body;
+    const existingUser = await userModel.findOne({ email });
+
+    if (existingUser) {
+      req.flash('error', 'Este email ya ha sido registrado');
+      return res.redirect('/register');
+    }
+
+    const user = new userModel({ first_name, last_name, email, age, password });
+    await user.save();
+
+    req.flash('success', 'Registro exitoso');
+    res.redirect('/');
+  } catch (error) {
+    console.error(error);
+    req.flash('error', 'Hubo un error al registrarse');
+    res.redirect('/register');
+  }
+});
+
+//session logout
 app.get('/logout', webRouter)
-// always at last of session
+
+//define this always after session
 app.use(setDefaultUserId);
 
 //views
