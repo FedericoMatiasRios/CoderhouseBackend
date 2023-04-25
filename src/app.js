@@ -1,6 +1,6 @@
 import { Server } from 'socket.io'
 import { productsManagerMongoose } from './models/ProductSchema.js'
-import { app } from './routers/routers.js'
+import { app } from './routers/baseRouters.js'
 import { productManager } from "./controllers/controllers.js"
 import { mongoose } from 'mongoose'
 import { MONGODB_CNX_STR } from './config/config.js'
