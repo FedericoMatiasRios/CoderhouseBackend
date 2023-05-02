@@ -1,5 +1,6 @@
 import express from 'express';
-import { webRouter, requireAuth } from '../controllers/controllers.js';
+import { webRouter } from '../controllers/baseControllers.js';
+import { requireAuth } from "../controllers/utilitiesController.js";
 
 export const viewRouter = express.Router();
 

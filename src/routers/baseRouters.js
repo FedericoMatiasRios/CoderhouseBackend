@@ -5,12 +5,11 @@ import { viewRouter } from './viewsRouter.js';
 import { authRouter } from './authRouter.js';
 import { productRouter } from './productsRouter.js';
 import { cartRouter } from './cartRouter.js';
+import { palabraSecreta } from '../config/config.js';
 
 export const app = express()
 
-const PALABRA_SECRETA = 'palabrasecreta';
-
-app.use(cookieParser(PALABRA_SECRETA));
+app.use(cookieParser(palabraSecreta));
 
 // configure handlebars engine
 app.engine('handlebars', engine());

@@ -1,7 +1,9 @@
 import express from 'express';
 import passport from 'passport';
 import flash from 'connect-flash';
-import { webRouter, setDefaultUserId, serializeUserController, deserializeUserController, githubStrategy, githubAuth, githubAuthCallback, githubAuthCallbackHandler, sessionMiddleware, renderLoginPage, handleLogin, showRegisterPage, registerUser, localStrategy } from '../controllers/controllers.js';
+import { webRouter } from '../controllers/baseControllers.js';
+import { setDefaultUserId } from "../controllers/utilitiesController.js";
+import { serializeUserController, deserializeUserController, githubStrategy, githubAuth, githubAuthCallback, githubAuthCallbackHandler, sessionMiddleware, renderLoginPage, handleLogin, showRegisterPage, registerUser, localStrategy } from "../controllers/sessionController.js";
 
 export const authRouter = express.Router();
 
