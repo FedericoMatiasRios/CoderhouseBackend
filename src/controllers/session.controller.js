@@ -1,4 +1,4 @@
-import { userModel } from '../models/UserSchema.js';
+import { userModel } from '../dao/mongo/models/user.model.js';
 import { Strategy as GithubStrategy } from 'passport-github2';
 import MongoStore from 'connect-mongo';
 import session from 'express-session';
@@ -6,7 +6,7 @@ import passport from 'passport';
 import { Strategy as LocalStrategy } from 'passport-local';
 import bcrypt from 'bcrypt';
 import { githubClientId, githubClientSecret, mongodbCnxStr, sessionSecret } from '../config/config.js';
-import { webRouter } from './baseControllers.js';
+import { webRouter } from './base.controller.js';
 
 //session
 

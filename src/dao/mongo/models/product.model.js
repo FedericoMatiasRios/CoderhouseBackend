@@ -1,5 +1,5 @@
 import mongoose from 'mongoose'
-import { MongooseManager } from '../dao/managers-mongoose/MongooseManager.js'
+import { ProductDAO } from '../classes/product.dao.js';
 import mongoosePaginate from 'mongoose-paginate-v2';
 
 const productSchema = mongoose.Schema({
@@ -17,4 +17,4 @@ productSchema.plugin(mongoosePaginate);
 
 const productDb = mongoose.model('products', productSchema)
 
-export const productsManagerMongoose = new MongooseManager(productDb)
+export const productDAO = new ProductDAO(productDb)

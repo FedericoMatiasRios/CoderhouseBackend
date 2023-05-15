@@ -1,6 +1,6 @@
 import fs from 'fs'
 
-export class ProductManager {
+export class ProductDAO {
     products
 
     constructor(path) {
@@ -125,28 +125,28 @@ class Product {
     }
 }
 
-const productManager = new ProductManager('./database/products.json')
+const productDAO = new ProductDAO('./database/products.json')
 
 //async function runTest() {
-//    await productManager.firstTime()
-//    await productManager.getProducts()
-//    await productManager.addProduct({title: "producto prueba", description: "Este es un producto prueba", price: 200, thumbnail: "Sin imagen", code: "abc123", stock: 25})
-//    await productManager.addProduct({title: "title 2", description: "description 2", price: 200, thumbnail: "Sin imagen", code: "222", stock: 25})
-//    await productManager.addProduct({title: "title 3", description: "description 3", price: 200, thumbnail: "Sin imagen", code: "333", stock: 25})
-//    await productManager.getProducts()
-//    await productManager.getProductById(1)
-//    await productManager.updateProduct(1, {title: "updated"})
-//    await productManager.getProductById(1)
-//    await productManager.deleteProduct(1)
-//    await productManager.getProducts()
+//    await productDAO.firstTime()
+//    await productDAO.getProducts()
+//    await productDAO.addProduct({title: "producto prueba", description: "Este es un producto prueba", price: 200, thumbnail: "Sin imagen", code: "abc123", stock: 25})
+//    await productDAO.addProduct({title: "title 2", description: "description 2", price: 200, thumbnail: "Sin imagen", code: "222", stock: 25})
+//    await productDAO.addProduct({title: "title 3", description: "description 3", price: 200, thumbnail: "Sin imagen", code: "333", stock: 25})
+//    await productDAO.getProducts()
+//    await productDAO.getProductById(1)
+//    await productDAO.updateProduct(1, {title: "updated"})
+//    await productDAO.getProductById(1)
+//    await productDAO.deleteProduct(1)
+//    await productDAO.getProducts()
 //  }
 
 // runTest()
 
 //Error: Code already exists
-//productManager.addProduct({title: "producto prueba", description: "Este es un producto prueba", price: 200, thumbnail: "Sin imagen", code: "abc123", stock: 25})
+//productDAO.addProduct({title: "producto prueba", description: "Este es un producto prueba", price: 200, thumbnail: "Sin imagen", code: "abc123", stock: 25})
 
-// productManager.getProductById(1)
+// productDAO.getProductById(1)
 
 //Error: Not found
-//productManager.getProductById(2)
+//productDAO.getProductById(2)

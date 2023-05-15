@@ -1,9 +1,8 @@
 import { Server } from 'socket.io'
-import { productsManagerMongoose } from './models/ProductSchema.js'
-import { app } from './routers/baseRouters.js'
-import { productManager } from "./controllers/baseControllers.js"
+import { productDAO } from './dao/mongo/models/product.model.js'
+import { app } from './routers/base.router.js'
 import { mongoose } from 'mongoose'
-import { messagesManagerMongoose } from './models/MessagesSchema.js'
+import { messageDAO } from './dao/mongo/models/message.model.js'
 import { mongodbCnxStr } from './config/config.js'
 
 await mongoose.connect(mongodbCnxStr, {
@@ -24,31 +23,31 @@ io.on('connection', socket => {
   console.log('New client connected!')
 
   socket.on('nuevoProducto', async prod => {
-    // await productManager.firstTime()
-    // await productManager.addProduct(prod)
-    // let products = await productManager.getProducts();
+    // await productDAO.firstTime()
+    // await productDAO.addProduct(prod)
+    // let products = await productDAO.getProducts();
 
-    await productsManagerMongoose.add(prod)
-    let products = await productsManagerMongoose.getAll();
+    await productDAO.add(prod)
+    let products = await productDAO.getAll();
 
     // products = JSON.parse(products)
     io.sockets.emit('actualizar', products)
   })
 
   socket.on('deleteProduct', async id => {
-    // await productManager.firstTime()
-    // await productManager.deleteProduct(id)
-    // let products = await productManager.getProducts();
-    await productsManagerMongoose.deleteProduct(id)
-    let products = await productsManagerMongoose.getAll();
+    // await productDAO.firstTime()
+    // await productDAO.deleteProduct(id)
+    // let products = await productDAO.getProducts();
+    await productDAO.deleteProduct(id)
+    let products = await productDAO.getAll();
 
     // products = JSON.parse(products)
     io.sockets.emit('actualizar', products)
   })
 
   socket.on('nuevoMensaje', async msg => {
-    await messagesManagerMongoose.add(msg)
-    let messages = await messagesManagerMongoose.getAll();
+    await messageDAO.add(msg)
+    let messages = await messageDAO.getAll();
 
     // products = JSON.parse(products)
     io.sockets.emit('actualizarMsg', messages)

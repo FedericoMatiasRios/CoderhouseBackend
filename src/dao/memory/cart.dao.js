@@ -1,6 +1,6 @@
 import fs from 'fs'
 
-export class CartsManager {
+export class CartDAO {
     carts
 
     constructor(path) {
@@ -85,13 +85,13 @@ class Cart {
     }
 }
 
-const cartsManager = new CartsManager('./database/carts.json')
+const cartDAO = new CartDAO('./database/carts.json')
 
 // async function runTest() {
-//    await cartsManager.firstTime()
-//    await cartsManager.newCart({products: []})
-//    await cartsManager.getCarts()
-//    await cartsManager.addToCart(1, {product: 7})
+//    await cartDAO.firstTime()
+//    await cartDAO.newCart({products: []})
+//    await cartDAO.getCarts()
+//    await cartDAO.addToCart(1, {product: 7})
 //  }
 
 //runTest();

@@ -1,9 +1,9 @@
-import { cartManagerMongoose } from '../models/CartSchema.js';
+import { cartDAO } from '../dao/mongo/models/cart.model.js';
 
 // Controladores Carts
 export async function controladorGetAllCarts(request, response) {
     try {
-        let carts = await cartManagerMongoose.getAll();
+        let carts = await cartDAO.getAll();
         const limit = parseInt(request.query.limit);
         // products = JSON.parse(products);
         console.log(carts);
@@ -18,8 +18,8 @@ export async function controladorGetAllCarts(request, response) {
 }
 export async function controladorNewCart(request, response) {
     try {
-        // await cartsManager.firstTime();
-        await cartManagerMongoose.add({ products: [] });
+        // await cartDAO.firstTime();
+        await cartDAO.add({ products: [] });
         response.status(201).send('New cart created!');
     } catch (err) {
         console.log(err);
@@ -27,7 +27,7 @@ export async function controladorNewCart(request, response) {
 }
 export async function controladorGetCart(request, response) {
     try {
-        let cart = await cartManagerMongoose.getByIdPopulate(request.params.cid);
+        let cart = await cartDAO.getByIdPopulate(request.params.cid);
         response.json(cart);
     } catch (err) {
         console.log(err);
@@ -35,8 +35,8 @@ export async function controladorGetCart(request, response) {
 }
 export async function controladorAddToCart(request, response) {
     try {
-        // await cartsManager.firstTime();
-        await cartManagerMongoose.addToCart(request.params.cid, { product: request.params.pid });
+        // await cartDAO.firstTime();
+        await cartDAO.addToCart(request.params.cid, { product: request.params.pid });
         response.status(201).send('Product: ' + request.params.pid + ', added in Cart: ' + request.params.cid);
     } catch (err) {
         console.log(err);
@@ -44,7 +44,7 @@ export async function controladorAddToCart(request, response) {
 }
 export async function controladorDeleteProductFromCart(request, response) {
     try {
-        const result = await cartManagerMongoose.deleteProductFromCart(request.params.cid, request.params.pid);
+        const result = await cartDAO.deleteProductFromCart(request.params.cid, request.params.pid);
         if (result.nModified === 0) {
             response.status(404).send('Product not found in cart!');
         } else {
@@ -59,7 +59,7 @@ export async function controladorUpdateCartProducts(req, res) {
     try {
         const cartId = req.params.cid;
         const products = req.body.products;
-        await cartManagerMongoose.updateCartProducts(cartId, products);
+        await cartDAO.updateCartProducts(cartId, products);
         res.status(200).send('Cart products updated!');
     } catch (err) {
         console.log(err);
@@ -71,7 +71,7 @@ export async function controladorUpdateCartProductQty(req, res) {
         const cartId = req.params.cid;
         const productId = req.params.pid;
         const quantity = req.body.quantity;
-        await cartManagerMongoose.updateProductQuantity(cartId, productId, quantity);
+        await cartDAO.updateProductQuantity(cartId, productId, quantity);
         res.status(200).send('Product quantity updated!');
     } catch (err) {
         console.log(err);
@@ -81,7 +81,7 @@ export async function controladorUpdateCartProductQty(req, res) {
 export async function controladorDeleteAllProducts(req, res) {
     try {
         const cartId = req.params.cid;
-        await cartManagerMongoose.deleteAllProducts(cartId);
+        await cartDAO.deleteAllProducts(cartId);
         res.status(200).send('All products deleted from cart!');
     } catch (err) {
         console.log(err);

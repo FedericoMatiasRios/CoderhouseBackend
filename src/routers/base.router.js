@@ -1,10 +1,10 @@
 import express from 'express';
 import cookieParser from 'cookie-parser';
 import { engine } from 'express-handlebars';
-import { viewRouter } from './viewsRouter.js';
-import { authRouter } from './authRouter.js';
-import { productRouter } from './productsRouter.js';
-import { cartRouter } from './cartRouter.js';
+import { viewRouter } from './views.router.js';
+import { authRouter } from './auth.router.js';
+import { productRouter } from './product.router.js';
+import { cartRouter } from './cart.router.js';
 import { palabraSecreta } from '../config/config.js';
 
 export const app = express()

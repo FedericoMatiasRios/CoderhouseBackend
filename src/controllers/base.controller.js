@@ -1,10 +1,8 @@
-import { ProductManager } from '../dao/managers-fs/ProductManager.js';
-import { CartsManager } from '../dao/managers-fs/CartsManager.js';
 import { Router } from 'express';
-import { productsManagerMongoose } from '../models/ProductSchema.js';
-import { cartManagerMongoose } from '../models/CartSchema.js';
-import { messagesManagerMongoose } from '../models/MessagesSchema.js';
-import { userModel } from '../models/UserSchema.js';
+import { productDAO } from '../dao/mongo/models/product.model.js';
+import { cartDAO } from '../dao/mongo/models/cart.model.js';
+import { messageDAO } from '../dao/mongo/models/message.model.js';
+import { userModel } from '../dao/mongo/models/user.model.js';
 
 let messages = {};
 
@@ -32,7 +30,7 @@ webRouter.get('/', async (req, res) => {
             lean: true
         };
 
-        let products = await productsManagerMongoose.getAll(query, options);
+        let products = await productDAO.getAll(query, options);
 
         const userId = req.user;
         let user = null;
@@ -81,7 +79,7 @@ webRouter.get('/realtimeproducts', async (req, res) => {
             sort: { price: sort === 'desc' ? -1 : 1 },
             lean: true
         };
-        let products = await productsManagerMongoose.getAll(options);
+        let products = await productDAO.getAll(options);
 
         const payload = {
             status: 'success',
@@ -107,7 +105,7 @@ webRouter.get('/messages', async (req, res) => {
         let options = {
             lean: true
         };
-        messages = await messagesManagerMongoose.getAll(options);
+        messages = await messageDAO.getAll(options);
         res.render('chat', { hayMensajes: messages.docs.length > 0, messages });
     } catch (err) {
         console.log(err);
@@ -135,7 +133,7 @@ webRouter.get('/products', async (req, res) => {
             lean: true
         };
 
-        let products = await productsManagerMongoose.getAll(query, options);
+        let products = await productDAO.getAll(query, options);
 
         const payload = {
             status: 'success',
@@ -163,7 +161,7 @@ webRouter.get('/products', async (req, res) => {
 });
 webRouter.get('/products/:pid', async (req, res) => {
     try {
-        let product = await productsManagerMongoose.getById(req.params.pid);
+        let product = await productDAO.getById(req.params.pid);
         console.log(req.params.pid)
         console.log(product)
         // Reemplazar cartId por variable que corresponda al carrito de cada usuario
@@ -174,12 +172,12 @@ webRouter.get('/products/:pid', async (req, res) => {
 });
 webRouter.get('/carts/:cid', async (req, res) => {
     try {
-        let cart = await cartManagerMongoose.getByIdPopulate(req.params.cid);
+        let cart = await cartDAO.getByIdPopulate(req.params.cid);
         console.log(cart)
         res.render('cartDetail', { cart });
     } catch (err) {
         console.log(err);
     }
 });
-export const productManager = new ProductManager('./database/products.json');
-const cartsManager = new CartsManager('./database/carts.json');
+//export const productDAO = new ProductDAO('./database/products.json');
+//const cartDAO = new CartDAO('./database/carts.json');

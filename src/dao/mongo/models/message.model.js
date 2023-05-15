@@ -1,5 +1,5 @@
 import mongoose from 'mongoose'
-import { MongooseManager } from '../dao/managers-mongoose/MongooseManager.js'
+import { MessageDAO } from '../classes/message.dao.js';
 import mongoosePaginate from 'mongoose-paginate-v2';
 
 const messageSchema = mongoose.Schema({
@@ -11,4 +11,4 @@ messageSchema.plugin(mongoosePaginate);
 
 const messagesDb = mongoose.model('messages', messageSchema)
 
-export const messagesManagerMongoose = new MongooseManager(messagesDb)
+export const messageDAO = new MessageDAO(messagesDb)
