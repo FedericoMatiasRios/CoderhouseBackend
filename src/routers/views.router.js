@@ -9,3 +9,4 @@ viewRouter.use('/realtimeproducts', webRouter);
 viewRouter.use('/products', webRouter);
 viewRouter.use('/products/:pid', webRouter);
 viewRouter.use('/carts/:cid', webRouter);
+viewRouter.post('/carts/:cid/purchase', webRouter);

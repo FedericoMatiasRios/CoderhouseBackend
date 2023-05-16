@@ -3,6 +3,8 @@ import { productDAO } from '../dao/mongo/models/product.model.js';
 import { cartDAO } from '../dao/mongo/models/cart.model.js';
 import { messageDAO } from '../dao/mongo/models/message.model.js';
 import { userModel } from '../dao/mongo/models/user.model.js';
+import { ticketDAO } from '../dao/mongo/models/ticket.model.js';
+import crypto from 'crypto';
 
 let messages = {};
 
@@ -177,6 +179,68 @@ webRouter.get('/carts/:cid', async (req, res) => {
         res.render('cartDetail', { cart });
     } catch (err) {
         console.log(err);
+    }
+});
+
+webRouter.post('/carts/:cid/purchase', async (req, res) => {
+
+    const cid = req.params.cid;
+
+    try {
+        const cart = await cartDAO.getById(cid);
+
+        if (!cart) {
+            return res.status(404).json({ message: 'Cart not found' });
+        }
+
+        // Check if user is authenticated
+        if (!req.isAuthenticated()) {
+            return res.status(401).json({ message: 'Unauthorized' });
+        }
+
+        // Verificar si el stock está disponible
+        const productsInCart = cart.products;
+        const insufficientStockProducts = [];
+
+        for (let i = 0; i < productsInCart.length; i++) {
+            const product = await productDAO.getById(productsInCart[i].product);
+            if (!product || product.stock < productsInCart[i].quantity) {
+                insufficientStockProducts.push(product.title);
+            }
+        }
+
+        if (insufficientStockProducts.length > 0) {
+            return res.status(400).json({ message: `Insufficient stock for the following products: ${insufficientStockProducts.join(', ')}` });
+        }
+
+        // Calcular el monto total
+        let amount = 0;
+
+        for (const product of productsInCart) {
+            const dbProduct = await productDAO.getById(product.product);
+            if (!dbProduct) {
+                return res.status(404).json({ message: `Product with id ${product.product} not found` });
+            }
+            amount += dbProduct.price * product.quantity;
+
+            // Reducir el stock disponible según el quantity de cada producto agregado al carrito
+            const newStock = dbProduct.stock - product.quantity;
+            await productDAO.updateProduct(product.product, { stock: newStock });
+        }
+
+        const ticket = {
+            code: crypto.randomBytes(20).toString('hex'),
+            amount: amount,
+            purchaser: req.user.email
+        };
+
+        console.log(ticket);
+
+        await ticketDAO.create(ticket);
+
+        return res.status(200).json({ message: `Thank you ${ticket.purchaser}, your order has been placed. Code: ${ticket.code}, Amount: $${ticket.amount}` });
+    } catch (error) {
+        return res.status(500).json({ message: 'Internal server error' });
     }
 });
 //export const productDAO = new ProductDAO('./database/products.json');
