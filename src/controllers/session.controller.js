@@ -23,6 +23,9 @@ export const sessionMiddleware = session({
 export function renderLoginPage(req, res) {
     if (req.user) {
         res.redirect('/');
+    } else if (req.originalUrl.includes('/api')) {
+        res.set('WWW-Authenticate', 'Basic realm="Restricted Area"');
+        return res.status(401).send('Authentication required');
     } else {
         res.render('login', { messages: req.flash(), githubAuthUrl: '/login/github' });
     }

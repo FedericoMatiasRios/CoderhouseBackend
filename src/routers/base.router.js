@@ -20,8 +20,8 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(express.static('public'));
 
-app.use(authRouter);
-app.use(viewRouter);
 app.use('/api/products', productRouter);
 app.use('/api/carts', cartRouter);
+app.use(authRouter);
+app.use(viewRouter);
 
