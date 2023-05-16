@@ -6,7 +6,7 @@ class EmailService {
 
     constructor(credencialesMail) {
         this.#clienteNodemailer = createTransport({
-            host: 'gmail',
+            service: 'gmail',
             port: 587,
             secure: false,
             auth: credencialesMail
