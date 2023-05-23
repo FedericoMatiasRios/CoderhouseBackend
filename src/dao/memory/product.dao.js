@@ -1,4 +1,5 @@
 import fs from 'fs'
+import { errors } from '../../services/errors.service'
 
 export class ProductDAO {
     products
@@ -64,7 +65,7 @@ export class ProductDAO {
         const found = JSON.parse(await fs.promises.readFile(this.path, 'utf-8')).find(e => e.id == id)
 
         if (found === undefined) {
-            throw new Error('Not found')
+            throw new Error(errors.ERROR_NOT_FOUND)
         } else {
             if (title !== undefined) {this.products.find(e => e.id == id).title = title;}
             if (description !== undefined) {this.products.find(e => e.id == id).description = description;}
@@ -84,7 +85,7 @@ export class ProductDAO {
         const found = JSON.parse(await fs.promises.readFile(this.path, 'utf-8')).find(e => e.id == id)
 
         if (found === undefined) {
-            throw new Error('Not found')
+            throw new Error(errors.ERROR_NOT_FOUND)
         } else {
             let index = this.products.findIndex(e => e.id == id);
             this.products.splice(index, 1)
@@ -110,7 +111,7 @@ class Product {
     constructor({title, description, code, price, status, stock, category, thumbnails, id}) {
 
         if (code == undefined) {
-            throw new Error('Not Found')
+            throw new Error(errors.ERROR_NOT_FOUND)
         }
 
         this.id = id;
