@@ -1,24 +1,37 @@
 //utilities
 import bcrypt from 'bcrypt';
 import { userModel } from "../dao/mongo/models/user.model.js";
+import winston from "winston";
+import { winstonLogger } from '../utils/winstonLogger.js';
 
 export const setDefaultUserId = (req, res, next) => {
-    if (!req.session) {
-        req.session = {};
-    }
+  if (!req.session) {
+    req.session = {};
+  }
 
-    if (!req.session.userId) {
-        req.session.userId = null;
-    }
+  if (!req.session.userId) {
+    req.session.userId = null;
+  }
 
-    next();
+  next();
 };
 
 export const requireAuth = (req, res, next) => {
   if (!req.isAuthenticated() && req.path !== '/login' && req.path !== '/register') {
-      return res.redirect('/login');
+    return res.redirect('/login');
   }
   return next();
+};
+
+export const loggerTest = (req, res, next) => {
+  req.logger.fatal('fatal log ok');
+  req.logger.error('error log ok');
+  req.logger.warning('warning log ok');
+  req.logger.info('info log ok');
+  req.logger.http('http log logger');
+  req.logger.debug('debug log ok');
+
+  return res.send('Logging completed!');
 };
 
 /* export const requireAuth2 = (req, res, next) => {
