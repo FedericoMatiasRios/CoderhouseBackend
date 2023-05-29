@@ -4,6 +4,7 @@ import { app } from './routers/base.router.js'
 import { mongoose } from 'mongoose'
 import { messageDAO } from './dao/mongo/models/message.model.js'
 import { mongodbCnxStr } from './config/config.js'
+import { winstonLogger } from './utils/winstonLogger.js'
 
 await mongoose.connect(mongodbCnxStr, {
   useNewUrlParser: true,
@@ -11,16 +12,16 @@ await mongoose.connect(mongodbCnxStr, {
   dbName: 'ecommerce',
 })
   .then(() => {
-    console.log('Connected to Mongo Database.');
+    winstonLogger.info('Connected to Mongo Database.');
   })
-  .catch(err => console.error(err));
+  .catch(err => winstonLogger.error(err));
 
 const puerto = 8080
-const servidorConectado = app.listen(puerto, () => { console.log('Connected.') })
+const servidorConectado = app.listen(puerto, () => { winstonLogger.info('Connected.') })
 
 const io = new Server(servidorConectado)
 io.on('connection', socket => {
-  console.log('New client connected!')
+  winstonLogger.info('New client connected!')
 
   socket.on('nuevoProducto', async prod => {
     // await productDAO.firstTime()

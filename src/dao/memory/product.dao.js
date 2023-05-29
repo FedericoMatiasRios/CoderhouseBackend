@@ -1,5 +1,6 @@
 import fs from 'fs'
 import { errors } from '../../services/errors.service'
+import { winstonLogger } from '../../utils/winstonLogger'
 
 export class ProductDAO {
     products
@@ -75,7 +76,7 @@ export class ProductDAO {
             if (stock !== undefined) {this.products.find(e => e.id == id).stock = stock;}
             if (category !== undefined) {this.products.find(e => e.id == id).category = category;}
             if (thumbnails !== undefined) {this.products.find(e => e.id == id).thumbnails = thumbnails;}
-            console.log("Updated")
+            req.logger.info("Updated")
         }
         
         await fs.promises.writeFile(this.path, JSON.stringify(this.products))        
@@ -90,7 +91,7 @@ export class ProductDAO {
             let index = this.products.findIndex(e => e.id == id);
             this.products.splice(index, 1)
             await fs.promises.writeFile(this.path, JSON.stringify(this.products))
-            console.log("Deleted product with id:" + id)
+            req.logger.info("Deleted product with id:" + id)
         }
     }
 }

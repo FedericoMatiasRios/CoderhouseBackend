@@ -6,14 +6,14 @@ export async function controladorProductsGet(request, response) {
         let products = await productDAO.getAll();
         const limit = parseInt(request.query.limit);
         // products = JSON.parse(products);
-        console.log(products);
+        req.logger.info(products);
         if (limit) {
             products = products.slice(0, limit);
         }
         response.json(products);
         // http://127.0.0.1:8080/products?limit=2
     } catch (err) {
-        console.log(err);
+        req.logger.error(err);
     }
 }
 export async function controladorId(request, response) {
@@ -22,7 +22,7 @@ export async function controladorId(request, response) {
         response.json(products);
         // http://127.0.0.1:8080/products/2
     } catch (err) {
-        console.log(err);
+        req.logger.error(err);
     }
 }
 export async function controladorProductsPost(request, response) {
@@ -31,7 +31,7 @@ export async function controladorProductsPost(request, response) {
         await productDAO.add(request.body);
         response.status(201).send('Product added!');
     } catch (err) {
-        console.log(err);
+        req.logger.error(err);
     }
 }
 export async function controladorUpdateProduct(request, response) {
@@ -40,7 +40,7 @@ export async function controladorUpdateProduct(request, response) {
         await productDAO.updateProduct(request.params.pid, request.body);
         response.status(201).send('Product uptdated!');
     } catch (err) {
-        console.log(err);
+        req.logger.error(err);
     }
 }
 export async function controladorDeleteProduct(request, response) {
@@ -48,6 +48,6 @@ export async function controladorDeleteProduct(request, response) {
         await productDAO.delete(request.params.pid);
         response.status(201).send('Product deleted!');
     } catch (err) {
-        console.log(err);
+        req.logger.error(err);
     }
 }

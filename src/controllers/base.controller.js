@@ -63,7 +63,7 @@ webRouter.get('/', async (req, res) => {
             status: 'error',
             message: err.message
         };
-        console.log(payload);
+        req.logger.debug(payload);
 
         res.render('error', payload);
     }
@@ -99,7 +99,7 @@ webRouter.get('/realtimeproducts', async (req, res) => {
         // products = JSON.parse(products);
         res.render('realTimeProducts', payload);
     } catch (err) {
-        console.log(err);
+        req.logger.debug(err);
     }
 });
 webRouter.get('/messages', async (req, res) => {
@@ -110,7 +110,7 @@ webRouter.get('/messages', async (req, res) => {
         messages = await messageDAO.getAll(options);
         res.render('chat', { hayMensajes: messages.docs.length > 0, messages });
     } catch (err) {
-        console.log(err);
+        req.logger.debug(err);
     }
 });
 webRouter.get('/products', async (req, res) => {
@@ -164,21 +164,21 @@ webRouter.get('/products', async (req, res) => {
 webRouter.get('/products/:pid', async (req, res) => {
     try {
         let product = await productDAO.getById(req.params.pid);
-        console.log(req.params.pid)
-        console.log(product)
+        req.logger.debug(req.params.pid)
+        req.logger.debug(product)
         // Reemplazar cartId por variable que corresponda al carrito de cada usuario
         res.render('productDetail', { product, cartId: '64187748029ab3d04621d6ce' });
     } catch (err) {
-        console.log(err);
+        req.logger.debug(err);
     }
 });
 webRouter.get('/carts/:cid', async (req, res) => {
     try {
         let cart = await cartDAO.getByIdPopulate(req.params.cid);
-        console.log(cart)
+        req.logger.debug(cart)
         res.render('cartDetail', { cart });
     } catch (err) {
-        console.log(err);
+        req.logger.debug(err);
     }
 });
 
@@ -234,7 +234,7 @@ webRouter.post('/carts/:cid/purchase', async (req, res) => {
             purchaser: req.user.email
         };
 
-        console.log(ticket);
+        req.logger.debug(ticket);
 
         await ticketDAO.create(ticket);
 

@@ -23,6 +23,6 @@ export async function fakerEndPoint(req, res) {
         }
         res.json(products);
     } catch (err) {
-        console.log(err);
+        req.logger.error(err);
     }
 }

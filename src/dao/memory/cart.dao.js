@@ -1,4 +1,5 @@
 import fs from 'fs'
+import { winstonLogger } from '../../utils/winstonLogger'
 
 export class CartDAO {
     carts
@@ -61,10 +62,10 @@ export class CartDAO {
             if (product !== undefined && quantity !== undefined) {
                 if (this.carts.find(e => e.id == id).products.find(e => e.product == product)){
                     this.carts.find(e => e.id == id).products.find(e => e.product == product).quantity += 1
-                    console.log("Updated")
+                    req.logger.info("Updated")
                 } else {
                     this.carts.find(e => e.id == id).products.push({product, quantity});
-                    console.log("Added")
+                    req.logger.info("Added")
                 }
             }
         }

@@ -1,7 +1,7 @@
 import { emailService } from "../services/email.service.js";
 
 export function handleGetMail (req, res, next) {
-    console.log(req.body)
+    req.logger.info(req.body)
     res.render('email');
 }
 export async function handlePostMail (req, res, next) {
@@ -9,9 +9,9 @@ export async function handlePostMail (req, res, next) {
 
     try {
         const info = await emailService.send(destinatario, mensaje)
-        console.log(info)
+        req.logger.info(info)
     } catch (error) {
-        console.log(error)
+        req.logger.error(error)
     }
 
     res.send('Mensaje enviado!')

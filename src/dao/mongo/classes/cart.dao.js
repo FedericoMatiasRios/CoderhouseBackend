@@ -35,7 +35,7 @@ export class CartDAO {
     );
 
     if (existingProduct) {
-      console.log('Cart updated:', existingProduct);
+      req.logger.info('Cart updated:', existingProduct);
       return;
     }
 
@@ -46,7 +46,7 @@ export class CartDAO {
       { new: true }
     );
 
-    console.log('Cart updated:', updatedCart);
+    req.logger.info('Cart updated:', updatedCart);
   }
   async deleteProductFromCart(cartId, productId) {
     return await this.#db.updateOne({ _id: cartId }, { $pull: { products: { product: productId } } }).lean();

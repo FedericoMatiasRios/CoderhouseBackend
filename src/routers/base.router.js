@@ -10,11 +10,14 @@ import compression from 'express-compression';
 import { descripciones, errors } from '../services/errors.service.js';
 import { NotFoundError } from '../services/NotFoundError.service.js';
 import { InvalidArgumentError } from '../services/InvalidArgumentError.service.js';
+import { logger } from '../middlewares/logger.js';
 
 export const app = express()
 
 app.use(compression({ brotli: { enabled: true, zlib: {} } }));
 app.use(cookieParser(palabraSecreta));
+
+app.use(logger);
 
 app.use((error, req, res, next) => {
     if (error instanceof NotFoundError)

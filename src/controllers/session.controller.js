@@ -71,7 +71,7 @@ export async function registerUser(req, res) {
         req.flash('success', 'Registro exitoso');
         res.redirect('/');
     } catch (error) {
-        console.error(error);
+        req.logger.error(error);
         req.flash('error', 'Hubo un error al registrarse');
         res.redirect('/register');
     }
@@ -90,25 +90,25 @@ webRouter.get('/logout', (req, res) => {
 //passport
 
 export const localStrategy = new LocalStrategy({ usernameField: 'email', passReqToCallback: true }, async (req, email, password, done) => {
-    console.log('LocalStrategy called');
+    req.logger.info('LocalStrategy called');
 
     try {
         const user = await userModel.findOne({ email: email });
         if (!user) {
             return done(null, false, { message: 'Invalid email or password' });
         }
-        console.log('password: ' + password);
-        console.log(user.password);
-        console.log('Before bcrypt compare');
+        req.logger.info('password: ' + password);
+        req.logger.info(user.password);
+        req.logger.info('Before bcrypt compare');
         const isMatch = await bcrypt.compare(password, user.password);
-        console.log('After bcrypt compare');
+        req.logger.info('After bcrypt compare');
         if (!isMatch) {
             return done(null, false, { message: 'Invalid email or password' });
         }
         req.flash('success', 'Logged in successfully!');
         return done(null, user);
     } catch (err) {
-        console.error(err);
+        req.logger.error(err);
         return done(err);
     }
 });
@@ -117,8 +117,8 @@ export const serializeUserController = (user, done) => {
     done(null, user._id);
 };
 
-export const deserializeUserController = async (id, done) => {
-    console.log('deserializeUser called with id:', id);
+export const deserializeUserController = async (req, id, done) => {
+    req.logger.info('deserializeUser called with id:', id);
     try {
         const user = await userModel.findById(id);
         if (!user) {
@@ -126,13 +126,12 @@ export const deserializeUserController = async (id, done) => {
         }
         return done(null, user);
     } catch (err) {
-        console.error(err);
+        req.logger.error(err);
         return done(err);
     }
 };
 //passport github login
 function mapGithubUserToLocalUser(githubUser) {
-    console.log(githubUser);
     const email = githubUser._json.email != null ? githubUser._json.email : `${githubUser.username}@github.com`;
     const firstName = githubUser.displayName != null ? githubUser.displayName : 'Unknown';
     const lastName = githubUser.id != null ? githubUser.id : 'Unknown';
@@ -166,7 +165,6 @@ export const githubStrategy = new GithubStrategy({
                 const existingUser = await userModel.findOne({ email: email });
 
                 if (existingUser) {
-                    console.log('user already exists, updated');
                     // Update the existing user with the latest Github info
                     const updatedUser = await userModel.findOneAndUpdate(
                         { email: email },
@@ -175,7 +173,6 @@ export const githubStrategy = new GithubStrategy({
                     );
                     return done(null, updatedUser);
                 } else {
-                    console.log('New github user created');
                     // Save the user to the database and return it
                     const createdUser = await userModel.create(user);
                     return done(null, createdUser);
