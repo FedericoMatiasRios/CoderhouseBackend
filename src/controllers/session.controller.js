@@ -7,7 +7,8 @@ import { Strategy as LocalStrategy } from 'passport-local';
 import bcrypt from 'bcrypt';
 import { githubClientId, githubClientSecret, mongodbCnxStr, sessionSecret } from '../config/config.js';
 import { webRouter } from './base.controller.js';
-import { generatePasswordRecoveryToken } from './passwordRecover.js';
+import crypto from 'crypto';
+import { sendPasswordRecoveryEmail } from './pw-recovery.controller.js';
 
 //session
 
@@ -23,20 +24,20 @@ export const sessionMiddleware = session({
 
 export function renderLoginPage(req, res) {
     if (req.user) {
-       res.redirect('/');
+        res.redirect('/');
     } else if (req.originalUrl.includes('/forgot-password')) {
-       // Handle rendering of forgot password form
-       res.render('forgot-password');
+        // Handle rendering of forgot password form
+        res.render('forgot-password');
     } else if (req.originalUrl.includes('/reset-password')) {
-       // Handle rendering of reset password form
-       res.render('reset-password', { token: req.params.token });
+        // Handle rendering of reset password form
+        res.render('reset-password', { token: req.params.token });
     } else if (req.originalUrl.includes('/api')) {
-       res.set('WWW-Authenticate', 'Basic realm="Restricted Area"');
-       return res.status(401).send('Authentication required');
+        res.set('WWW-Authenticate', 'Basic realm="Restricted Area"');
+        return res.status(401).send('Authentication required');
     } else {
-       res.render('login', { messages: req.flash(), githubAuthUrl: '/login/github' });
+        res.render('login', { messages: req.flash(), githubAuthUrl: '/login/github' });
     }
- }
+}
 
 export function handleLogin(req, res) {
     passport.authenticate('local', {
@@ -200,3 +201,128 @@ export const githubAuthCallback = passport.authenticate('github', { failureRedir
 export const githubAuthCallbackHandler = (req, res) => {
     res.redirect('/');
 };
+
+// password recovery
+
+export async function forgotGet(req, res) {
+    res.render('forgot-password', { messages: req.flash() });
+}
+
+export async function forgotPost(req, res) {
+
+    const { email } = req.body;
+
+    try {
+        // Find the user based on the provided email
+        const user = await userModel.findOne({ email });
+
+        if (!user) {
+            req.flash('error', 'No user found with that email');
+            return res.redirect('/forgot-password');
+        }
+
+        // Generate a password recovery token
+        const token = crypto.randomBytes(32).toString('hex');
+
+        // Set the password recovery token and expiration in the user document
+        user.passwordRecoveryToken = token;
+        user.passwordRecoveryTokenExpiration = Date.now() + 3600000;
+        await user.save();
+
+        // Compose the email subject and body
+        const emailSubject = 'Password Recovery';
+        const resetLink = `${req.protocol}://${req.get('host')}/reset-password/${token}`;
+        const emailBody = `Click the following link to reset your password: ${resetLink}`;
+
+        // Send the password recovery email
+        await sendPasswordRecoveryEmail(email, emailSubject, emailBody);
+        console.log('after recovery send');
+        req.flash('success', 'Password recovery email sent');
+        res.redirect('/forgot-password');
+
+    } catch (error) {
+        console.error(error);
+        req.flash('error', 'An error occurred while processing your request');
+        res.redirect('/forgot-password');
+    }
+}
+
+export async function resetGet(req, res) {
+
+    const { token } = req.params;
+
+    try {
+        // Find the user based on the password recovery token
+        const user = await userModel.findOne({ passwordRecoveryToken: token });
+
+        if (!user) {
+            req.flash('error', 'Invalid or expired password recovery token');
+            return res.redirect('/forgot-password');
+        }
+
+        // Check if the token has expired
+        const tokenExpiration = user.passwordRecoveryTokenExpiration;
+        if (Date.now() > tokenExpiration) {
+            req.flash('error', 'Password recovery token has expired');
+            return res.redirect('/forgot-password');
+        }
+
+        // Render the password reset form with the token
+        res.render('reset-password', { token, messages: req.flash() });
+
+    } catch (error) {
+        console.error(error);
+        req.flash('error', 'An error occurred while processing your request');
+        res.redirect('/forgot-password');
+    }
+}
+
+export async function resetPost(req, res) {
+
+    const { token } = req.params;
+    const { password, confirmPassword } = req.body;
+
+    try {
+        // Find the user based on the password recovery token
+        const user = await userModel.findOne({ passwordRecoveryToken: token });
+
+        if (!user) {
+            req.flash('error', 'Invalid or expired password recovery token');
+            return res.redirect('/forgot-password');
+        }
+
+        // Check if the token has expired
+        const tokenExpiration = user.passwordRecoveryTokenExpiration;
+        if (Date.now() > tokenExpiration) {
+            req.flash('error', 'Password recovery token has expired');
+            return res.redirect('/forgot-password');
+        }
+
+        // Check if the password and confirm password match
+        if (password !== confirmPassword) {
+            req.flash('error', 'Passwords do not match');
+            return res.redirect(`/reset-password/${token}`);
+        }
+
+        // Check if the new password is the same as the current one
+        const isSamePassword = await bcrypt.compare(password, user.password);
+        if (isSamePassword) {
+            req.flash('error', 'New password must be different from the current one');
+            return res.redirect(`/reset-password/${token}`);
+        }
+
+        // Update the user's password and clear the password recovery token
+        user.password = password;
+        user.passwordRecoveryToken = undefined;
+        user.passwordRecoveryTokenExpiration = undefined;
+        await user.save();
+
+        req.flash('success', 'Password reset successfully');
+        res.redirect('/login');
+
+    } catch (error) {
+        console.error(error);
+        req.flash('error', 'An error occurred while processing your request');
+        res.redirect('/forgot-password');
+    }
+}
