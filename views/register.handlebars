@@ -1,6 +1,6 @@
 <h1>Registro</h1>
-{{#if error}}
-  <div class="alert alert-danger">{{error}}</div>
+{{#if messages.error}}
+  <div class="alert alert-danger">{{messages.error}}</div>
 {{/if}}
 <form id="registerForm" method="POST" action="/register">
     <label for="input_first_name">Nombre</label>

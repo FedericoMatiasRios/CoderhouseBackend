@@ -7,6 +7,7 @@ import { Strategy as LocalStrategy } from 'passport-local';
 import bcrypt from 'bcrypt';
 import { githubClientId, githubClientSecret, mongodbCnxStr, sessionSecret } from '../config/config.js';
 import { webRouter } from './base.controller.js';
+import { generatePasswordRecoveryToken } from './passwordRecover.js';
 
 //session
 
@@ -22,14 +23,20 @@ export const sessionMiddleware = session({
 
 export function renderLoginPage(req, res) {
     if (req.user) {
-        res.redirect('/');
+       res.redirect('/');
+    } else if (req.originalUrl.includes('/forgot-password')) {
+       // Handle rendering of forgot password form
+       res.render('forgot-password');
+    } else if (req.originalUrl.includes('/reset-password')) {
+       // Handle rendering of reset password form
+       res.render('reset-password', { token: req.params.token });
     } else if (req.originalUrl.includes('/api')) {
-        res.set('WWW-Authenticate', 'Basic realm="Restricted Area"');
-        return res.status(401).send('Authentication required');
+       res.set('WWW-Authenticate', 'Basic realm="Restricted Area"');
+       return res.status(401).send('Authentication required');
     } else {
-        res.render('login', { messages: req.flash(), githubAuthUrl: '/login/github' });
+       res.render('login', { messages: req.flash(), githubAuthUrl: '/login/github' });
     }
-}
+ }
 
 export function handleLogin(req, res) {
     passport.authenticate('local', {
@@ -51,10 +58,10 @@ export function showRegisterPage(req, res) {
     if (req.user) {
         res.redirect('/');
     } else {
+        console.log('entrando a registro con flash')
         res.render('register', { messages: req.flash() });
     }
 }
-
 export async function registerUser(req, res) {
     try {
         const { first_name, last_name, email, age, password } = req.body;
@@ -73,9 +80,11 @@ export async function registerUser(req, res) {
     } catch (error) {
         req.logger.error(error);
         req.flash('error', 'Hubo un error al registrarse');
+        console.log(error);
         res.redirect('/register');
     }
 }
+
 webRouter.get('/logout', (req, res) => {
     req.logout(() => {
         req.session.destroy(err => {
