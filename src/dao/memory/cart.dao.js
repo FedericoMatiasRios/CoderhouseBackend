@@ -20,25 +20,25 @@ export class CartDAO {
     }
 
     // métodos
-    async newCart({id, products}) {
-        
-        if(!products) throw new Error('Products are missing.')
+    async newCart({ id, products }) {
+
+        if (!products) throw new Error('Products are missing.')
 
         let getId = Math.max(...JSON.parse(await fs.promises.readFile('./database/carts.json', 'utf-8')).map(o => o.id))
-        
-        if(getId > 0){
+
+        if (getId > 0) {
             id = getId + 1
         } else {
             id = 1
         }
 
-        await this.carts.push(new Cart({id, products}))
+        await this.carts.push(new Cart({ id, products }))
         await fs.promises.writeFile(this.path, JSON.stringify(this.carts))
     }
 
     async getCarts() {
         const get = await fs.promises.readFile(this.path, 'utf-8')
-        return(get);
+        return (get);
     }
 
     async getCartById(id) {
@@ -47,40 +47,40 @@ export class CartDAO {
         const found = JSON.parse(await fs.promises.readFile(this.path, 'utf-8')).find(e => e.id == id)
 
         if (found === undefined) {
-            return('Not found')
+            return ('Not found')
         } else {
-            return(found)
+            return (found)
         }
     }
 
-    async addToCart(id, {product, quantity = 1}) {
+    async addToCart(id, { product, quantity = 1 }, req) {
         const found = JSON.parse(await fs.promises.readFile(this.path, 'utf-8')).find(e => e.id == id)
 
         if (found === undefined) {
             throw new Error('Not found')
         } else {
             if (product !== undefined && quantity !== undefined) {
-                if (this.carts.find(e => e.id == id).products.find(e => e.product == product)){
+                if (this.carts.find(e => e.id == id).products.find(e => e.product == product)) {
                     this.carts.find(e => e.id == id).products.find(e => e.product == product).quantity += 1
                     req.logger.info("Updated")
                 } else {
-                    this.carts.find(e => e.id == id).products.push({product, quantity});
+                    this.carts.find(e => e.id == id).products.push({ product, quantity });
                     req.logger.info("Added")
                 }
             }
         }
-        
-        await fs.promises.writeFile(this.path, JSON.stringify(this.carts))        
+
+        await fs.promises.writeFile(this.path, JSON.stringify(this.carts))
     }
 }
 
 class Cart {
 
     static id = 0;
-    
+
     products
 
-    constructor({id, products}) {
+    constructor({ id, products }) {
         this.id = id;
         this.products = products
     }

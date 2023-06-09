@@ -72,16 +72,32 @@ webRouter.get('/realtimeproducts', async (req, res) => {
     try {
         let limit = req.query.limit ? parseInt(req.query.limit) : 10;
         let page = req.query.page ? parseInt(req.query.page) : 1;
-        let sort = req.query.sort ? req.query.sort : ''
+        let sort = req.query.sort ? req.query.sort : '';
+        let category = req.query.category ? req.query.category : '';
+
+        let query = {
+            stock: { $gt: 0 }
+        };
+
+        if (category) {
+            query = { category: category };
+        }
 
         let options = {
             page: page,
             limit: limit,
-            // 'asc' set by default
             sort: { price: sort === 'desc' ? -1 : 1 },
             lean: true
         };
-        let products = await productDAO.getAll(options);
+
+        let products = await productDAO.getAll(query, options);
+
+        const userId = req.user;
+        let user = null;
+
+        if (userId) {
+            user = await userModel.findById(userId).lean();
+        }
 
         const payload = {
             status: 'success',
@@ -92,11 +108,12 @@ webRouter.get('/realtimeproducts', async (req, res) => {
             page: products.page,
             hasPrevPage: products.hasPrevPage,
             hasNextPage: products.hasNextPage,
-            prevLink: products.hasPrevPage ? `./?limit=${limit}&page=${products.prevPage}` : null,
-            nextLink: products.hasNextPage ? `./?limit=${limit}&page=${products.nextPage}` : null,
-            hayProductos: products.docs.length > 0, products
+            prevLink: products.hasPrevPage ? `/realtimeproducts/?limit=${limit}&page=${products.prevPage}` : null,
+            nextLink: products.hasNextPage ? `/realtimeproducts/?limit=${limit}&page=${products.nextPage}` : null,
+            hayProductos: products.docs.length > 0, 
+            products,
+            user
         };
-        // products = JSON.parse(products);
         res.render('realTimeProducts', payload);
     } catch (err) {
         req.logger.debug(err);

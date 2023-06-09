@@ -6,14 +6,14 @@ export async function controladorGetAllCarts(request, response) {
         let carts = await cartDAO.getAll();
         const limit = parseInt(request.query.limit);
         // products = JSON.parse(products);
-        req.logger.info(carts);
+        request.logger.info(carts);
         if (limit) {
             carts = carts.slice(0, limit);
         }
         response.json(carts);
         // http://127.0.0.1:8080/products?limit=2
     } catch (err) {
-        req.logger.error(err);
+        request.logger.error(err);
     }
 }
 export async function controladorNewCart(request, response) {
@@ -22,7 +22,7 @@ export async function controladorNewCart(request, response) {
         await cartDAO.add({ products: [] });
         response.status(201).send('New cart created!');
     } catch (err) {
-        req.logger.error(err);
+        request.logger.error(err);
     }
 }
 export async function controladorGetCart(request, response) {
@@ -30,7 +30,7 @@ export async function controladorGetCart(request, response) {
         let cart = await cartDAO.getByIdPopulate(request.params.cid);
         response.json(cart);
     } catch (err) {
-        req.logger.error(err);
+        request.logger.error(err);
     }
 }
 export async function controladorAddToCart(request, response) {
@@ -39,7 +39,7 @@ export async function controladorAddToCart(request, response) {
         await cartDAO.addToCart(request.params.cid, { product: request.params.pid });
         response.status(201).send('Product: ' + request.params.pid + ', added in Cart: ' + request.params.cid);
     } catch (err) {
-        req.logger.error(err);
+        request.logger.error(err);
     }
 }
 export async function controladorDeleteProductFromCart(request, response) {
@@ -51,7 +51,7 @@ export async function controladorDeleteProductFromCart(request, response) {
             response.status(201).send('Product deleted from cart!');
         }
     } catch (err) {
-        req.logger.error(err);
+        request.logger.error(err);
         response.status(500).send('Internal server error');
     }
 }

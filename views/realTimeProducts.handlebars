@@ -1,3 +1,11 @@
+{{#if user}}
+Bienvenid@ {{user.first_name}} {{user.last_name}}! Email: {{user.email}}, Edad: {{user.age}}, Rol: {{user.role}}.
+<br>
+<a href="./logout">Logout</a>
+{{/if}}
+
+<div id="user-email" style="display:none;">{{#if user}}{{user.email}}{{/if}}</div>
+
 <center>
     <h1>Real Time Products</h1>
 </center>
@@ -59,7 +67,8 @@
             code: document.querySelector('#code').value,
             price: document.querySelector('#price').value,
             stock: document.querySelector('#stock').value,
-            category: document.querySelector('#category').value
+            category: document.querySelector('#category').value,
+            owner: document.querySelector('#user-email').innerText
         }
         socket.emit('nuevoProducto', prod)
     })

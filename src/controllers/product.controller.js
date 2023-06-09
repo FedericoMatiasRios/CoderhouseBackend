@@ -6,14 +6,14 @@ export async function controladorProductsGet(request, response) {
         let products = await productDAO.getAll();
         const limit = parseInt(request.query.limit);
         // products = JSON.parse(products);
-        req.logger.info(products);
+        request.logger.info(products);
         if (limit) {
             products = products.slice(0, limit);
         }
         response.json(products);
         // http://127.0.0.1:8080/products?limit=2
     } catch (err) {
-        req.logger.error(err);
+        request.logger.error(err);
     }
 }
 export async function controladorId(request, response) {
@@ -22,16 +22,32 @@ export async function controladorId(request, response) {
         response.json(products);
         // http://127.0.0.1:8080/products/2
     } catch (err) {
-        req.logger.error(err);
+        request.logger.error(err);
     }
 }
 export async function controladorProductsPost(request, response) {
     try {
-        // await productDAO.firstTime();
-        await productDAO.add(request.body);
+        console.log('hey');
+        const { title, description, code, price, stock, category, thumbnails } = request.body;
+        const owner = request.user.email;
+        console.log('owner value: '+ owner);
+        // Create the product object
+        const product = {
+            title,
+            description,
+            code,
+            price,
+            stock,
+            category,
+            thumbnails,
+            owner,
+        };
+
+        await productDAO.add(product);
         response.status(201).send('Product added!');
     } catch (err) {
-        req.logger.error(err);
+        request.logger.error(err);
+        // Handle the error accordingly
     }
 }
 export async function controladorUpdateProduct(request, response) {
@@ -40,7 +56,7 @@ export async function controladorUpdateProduct(request, response) {
         await productDAO.updateProduct(request.params.pid, request.body);
         response.status(201).send('Product uptdated!');
     } catch (err) {
-        req.logger.error(err);
+        request.logger.error(err);
     }
 }
 export async function controladorDeleteProduct(request, response) {
@@ -48,6 +64,6 @@ export async function controladorDeleteProduct(request, response) {
         await productDAO.delete(request.params.pid);
         response.status(201).send('Product deleted!');
     } catch (err) {
-        req.logger.error(err);
+        request.logger.error(err);
     }
 }

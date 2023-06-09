@@ -23,7 +23,7 @@ export class CartDAO {
   }
 
   //Carts
-  async addToCart(id, { product, quantity = 1 }) {
+  async addToCart(id, { product, quantity = 1 }, req) {
     if (!product || !quantity) {
       return;
     }

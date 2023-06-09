@@ -12,7 +12,7 @@ class EmailService {
             auth: credencialesMail
         });
     }
-    async send(destinatario, mensaje) {
+    async send(destinatario, mensaje, req) {
         const mailOptions = {
             from: 'Quien envía',
             to: destinatario,
