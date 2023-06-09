@@ -13,15 +13,24 @@ const productSchema = mongoose.Schema({
     thumbnails: [{ type: Array, required: true }],
     owner: {
         type: String,
-        default: 'admin',
         validate: {
             validator: async function (value) {
-                const user = await userModel.findOne({ email: value, role: 'premium' });
-                console.log('User:', user); // Debug information
+                if (value === 'admin') {
+                    return true; // Allow 'admin' as the owner
+                }
 
-                return !!user;
+                const user = await userModel.findOne({ email: value }).select('role');
+
+                if (user) {
+                    if (user.role === 'premium') {
+                        return true; // Allow the email as the owner value for premium users
+                    }
+                }
+
+                return false; // Reject the owner value if the user is not found or has a different role
             },
-            message: 'Only users with premium role can be assigned as product owners',
+            message: 'Only users with premium or admin role can be assigned as product owners',
+            type: 'user defined',
         },
     },
 });

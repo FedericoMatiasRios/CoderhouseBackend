@@ -29,8 +29,14 @@ export async function controladorProductsPost(request, response) {
     try {
         console.log('hey');
         const { title, description, code, price, stock, category, thumbnails } = request.body;
-        const owner = request.user.email;
-        console.log('owner value: '+ owner);
+
+        let owner;
+
+        if (request.user.role === 'admin') {
+            owner = 'admin';
+        } else {
+            owner = request.user.email;
+        }
         // Create the product object
         const product = {
             title,

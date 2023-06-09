@@ -68,7 +68,7 @@ Bienvenid@ {{user.first_name}} {{user.last_name}}! Email: {{user.email}}, Edad: 
             price: document.querySelector('#price').value,
             stock: document.querySelector('#stock').value,
             category: document.querySelector('#category').value,
-            owner: document.querySelector('#user-email').innerText
+            owner: document.querySelector('#user-email').innerText.trim() === 'adminCoder@coder.com' ? 'admin' : document.querySelector('#user-email').innerText.trim()
         }
         socket.emit('nuevoProducto', prod)
     })
