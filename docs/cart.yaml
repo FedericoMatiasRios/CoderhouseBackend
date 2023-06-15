@@ -1,0 +1,222 @@
+openapi: 3.0.0
+info:
+  title: Cart API
+  description: API for managing carts
+  version: 1.0.0
+tags:
+  - name: Cart
+    description: Operations related to the cart
+paths:
+  /api/carts:
+    get:
+      summary: Get all carts
+      tags:
+        - Cart
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Cart'
+    post:
+      summary: Create a new cart
+      tags:
+        - Cart
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Cart'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cart'
+  /api/carts/{cid}:
+    get:
+      summary: Get a cart by ID
+      tags:
+        - Cart
+      parameters:
+        - name: cid
+          in: path
+          description: ID of the cart
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cart'
+    put:
+      summary: Update a cart by ID
+      tags:
+        - Cart
+      parameters:
+        - name: cid
+          in: path
+          description: ID of the cart
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Cart'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cart'
+    delete:
+      summary: Delete all products from the cart
+      tags:
+        - Cart
+      parameters:
+        - name: cid
+          in: path
+          description: ID of the cart
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: No Content
+  /api/carts/{cid}/product/{pid}:
+    post:
+      summary: Add a product to the cart
+      tags:
+        - Cart
+      parameters:
+        - name: cid
+          in: path
+          description: ID of the cart
+          required: true
+          schema:
+            type: string
+        - name: pid
+          in: path
+          description: ID of the product
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cart'
+    delete:
+      summary: Remove a product from the cart
+      tags:
+        - Cart
+      parameters:
+        - name: cid
+          in: path
+          description: ID of the cart
+          required: true
+          schema:
+            type: string
+        - name: pid
+          in: path
+          description: ID of the product
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cart'
+  /api/carts/{cid}/products/{pid}:
+    put:
+      summary: Update product quantity in the cart
+      tags:
+        - Cart
+      parameters:
+        - name: cid
+          in: path
+          description: ID of the cart
+          required: true
+          schema:
+            type: string
+        - name: pid
+          in: path
+          description: ID of the product
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                quantity:
+                  type: number
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cart'
+components:
+  schemas:
+    Cart:
+      type: object
+      properties:
+        products:
+          type: array
+          items:
+            $ref: '#/components/schemas/Product'
+      example:
+        products:
+          - title: "Product Title"
+            description: "Product Description"
+            code: "ABC123"
+            price: 9.99
+            stock: 100
+            category: "Electronics"
+            thumbnails:
+              - "https://example.com/image1.jpg"
+              - "https://example.com/image2.jpg"
+            owner: "admin"
+    Product:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        code:
+          type: string
+        price:
+          type: number
+        stock:
+          type: number
+        category:
+          type: string
+        thumbnails:
+          type: array
+          items:
+            type: string
+        owner:
+          type: string

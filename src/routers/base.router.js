@@ -9,8 +9,24 @@ import { palabraSecreta } from '../config/config.js';
 import compression from 'express-compression';
 import { logger } from '../middlewares/logger.middleware.js';
 import { errorHandlerMiddleware } from '../middlewares/errors.middleware.js';
+import swaggerJSDoc from 'swagger-jsdoc';
+import swaggerUi from 'swagger-ui-express';
 
 export const app = express()
+
+const options = {
+    definition: {
+        openapi: '3.0.0',
+        info: {
+            title: 'Express API with Swagger',
+            description: 'A simple CRUD API application made with Express and document with Swagger',
+        },
+    },
+    apis: ['./docs/**/*.yaml'],
+}
+const specs = swaggerJSDoc(options)
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs))
+
 
 app.use(compression({ brotli: { enabled: true, zlib: {} } }));
 app.use(cookieParser(palabraSecreta));
