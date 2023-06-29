@@ -19,8 +19,9 @@ export async function controladorGetAllCarts(request, response) {
 export async function controladorNewCart(request, response) {
     try {
         // await cartDAO.firstTime();
-        await cartDAO.add({ products: [] });
-        response.status(201).send('New cart created!');
+        const createdCart = await cartDAO.add({ products: [] });
+        response.status(201).json(createdCart);
+
     } catch (err) {
         request.logger.error(err);
     }

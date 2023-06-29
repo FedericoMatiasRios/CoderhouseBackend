@@ -1,4 +1,5 @@
 import { productDAO } from '../dao/mongo/models/product.model.js';
+import { userModel } from '../dao/mongo/models/user.model.js';
 
 // Controladores Products
 export async function controladorProductsGet(request, response) {
@@ -27,16 +28,32 @@ export async function controladorId(request, response) {
 }
 export async function controladorProductsPost(request, response) {
     try {
-        console.log('hey');
         const { title, description, code, price, stock, category, thumbnails } = request.body;
 
         let owner;
 
+        if (!request.user) {
+
+            var credentials = request.headers.authorization.split(' ')[1];
+
+            var decodedCredentials = Buffer.from(credentials, 'base64').toString();
+            var [email, password] = decodedCredentials.split(':');
+
+            // Assuming you have retrieved the user object based on the authenticated email
+            const userFromBasicAuth = await userModel.findOne({ email: email });
+            if (userFromBasicAuth) {
+                request.user = userFromBasicAuth;
+            }
+        }
+
         if (request.user.role === 'admin') {
             owner = 'admin';
-        } else {
+        } else if (request.user.role === 'premium') {
             owner = request.user.email;
+        } else {
+            response.status(401).send('Only users with premium or admin role can be assigned as product owners');
         }
+
         // Create the product object
         const product = {
             title,
@@ -49,8 +66,9 @@ export async function controladorProductsPost(request, response) {
             owner,
         };
 
-        await productDAO.add(product);
-        response.status(201).send('Product added!');
+        const createdProduct = await productDAO.add(product);
+        response.status(201).json(createdProduct);
+
     } catch (err) {
         request.logger.error(err);
         // Handle the error accordingly

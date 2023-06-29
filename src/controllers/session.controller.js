@@ -59,7 +59,6 @@ export function showRegisterPage(req, res) {
     if (req.user) {
         res.redirect('/');
     } else {
-        console.log('entrando a registro con flash')
         res.render('register', { messages: req.flash() });
     }
 }

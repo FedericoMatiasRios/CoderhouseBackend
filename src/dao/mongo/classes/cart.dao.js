@@ -6,8 +6,8 @@ export class CartDAO {
 
   //Generic
   async add(prod) {
-    await this.#db.create(prod)
-    return prod
+    const createdCart = await this.#db.create(prod);
+    return createdCart
   }
 
   async getAll(query = {}, options) {

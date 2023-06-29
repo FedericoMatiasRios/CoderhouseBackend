@@ -39,7 +39,7 @@ io.on('connection', socket => {
     // await productDAO.firstTime()
     // await productDAO.deleteProduct(id)
     // let products = await productDAO.getProducts();
-    await productDAO.deleteProduct(id)
+    await productDAO.delete(id)
     let products = await productDAO.getAll();
 
     // products = JSON.parse(products)

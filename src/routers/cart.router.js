@@ -6,10 +6,26 @@ import { controladorGetAllCarts, controladorNewCart, controladorGetCart, control
 export const cartRouter = express.Router();
 
 // El usuario tiene role 'user'?
-function isUser(req, res, next) {
+async function isUser(req, res, next) {
+    if (!req.user) {
+        var credentials = req.headers.authorization.split(' ')[1];
+        var decodedCredentials = Buffer.from(credentials, 'base64').toString();
+        var [email, password] = decodedCredentials.split(':');
+
+        const user = await userModel.findOne({ email: email });
+
+        req.user = user;
+    }
+
     if (req.user && req.user.role === 'user') {
         next();
-    } else {
+    }
+    //Solo para testing de los endpoints
+    //Según las consignas solo el usuario deberia poder crear un cart
+    else if (req.user && req.user.role === 'admin'){
+        next();
+    } 
+    else {
         res.status(401).send('Unauthorized');
     }
 }

@@ -6,8 +6,8 @@ export class ProductDAO {
   
     //Generic
     async add(prod) {
-      await this.#db.create(prod)
-      return prod
+      const createdProduct = await this.#db.create(prod);
+      return createdProduct
     }
   
     async getAll(query = {}, options) {
