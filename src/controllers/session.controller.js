@@ -43,9 +43,14 @@ export function handleLogin(req, res) {
     passport.authenticate('local', {
         failureRedirect: '/login',
         failureFlash: true
-    })(req, res, () => {
+    })(req, res, async () => {
         if (req.user) {
             req.flash('success', 'Authentication succeeded');
+
+            // Update the last_connection field for the logged-in user
+            req.user.last_connection = new Date();
+            await req.user.save();
+
             res.redirect('/');
         } else {
             req.flash('error', 'Invalid email or password');
@@ -53,6 +58,7 @@ export function handleLogin(req, res) {
         }
     });
 }
+
 //register
 
 export function showRegisterPage(req, res) {
@@ -85,17 +91,27 @@ export async function registerUser(req, res) {
     }
 }
 
-webRouter.get('/logout', (req, res) => {
-    req.logout(() => {
-        req.session.destroy(err => {
-            if (err) {
-                res.render('login', { error: err });
-            } else {
-                res.redirect('/login');
-            }
+webRouter.get('/logout', async (req, res) => {
+    try {
+        // Update the last_connection field for the logged-out user
+        req.user.last_connection = new Date();
+        await req.user.save();
+
+        req.logout(() => {
+            req.session.destroy(err => {
+                if (err) {
+                    res.render('login', { error: err });
+                } else {
+                    res.redirect('/login');
+                }
+            });
         });
-    });
+    } catch (error) {
+        console.error(error);
+        res.render('login', { error: 'An error occurred during logout' });
+    }
 });
+
 //passport
 
 export const localStrategy = new LocalStrategy({ usernameField: 'email', passReqToCallback: true }, async (req, email, password, done) => {
@@ -174,6 +190,9 @@ export const githubStrategy = new GithubStrategy({
                 const existingUser = await userModel.findOne({ email: email });
 
                 if (existingUser) {
+                    // Update the last_connection field
+                    existingUser.last_connection = new Date();
+
                     // Update the existing user with the latest Github info
                     const updatedUser = await userModel.findOneAndUpdate(
                         { email: email },
@@ -182,6 +201,9 @@ export const githubStrategy = new GithubStrategy({
                     );
                     return done(null, updatedUser);
                 } else {
+                    // Set the last_connection field for the new user
+                    user.last_connection = new Date();
+
                     // Save the user to the database and return it
                     const createdUser = await userModel.create(user);
                     return done(null, createdUser);

@@ -1,7 +1,6 @@
 import mongoose from 'mongoose'
 import { ProductDAO } from '../classes/product.dao.js';
 import mongoosePaginate from 'mongoose-paginate-v2';
-import { userModel } from './user.model.js';
 
 const productSchema = mongoose.Schema({
     title: { type: String, required: true },

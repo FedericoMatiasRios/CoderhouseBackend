@@ -38,6 +38,10 @@ export const requireAuth = async (req, res, next) => {
 
   if (req.originalUrl.includes('/api')) {
 
+    if (req.user) {
+      return next();
+    }
+
     // Check if the request is an API request
     const authHeader = req.headers.authorization;
     if (!authHeader) {

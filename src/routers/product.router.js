@@ -7,12 +7,12 @@ import { userModel } from '../dao/mongo/models/user.model.js';
 export const productRouter = express.Router();
 
 // El usuario tiene role 'admin'?
-const isAdmin = async (req, res, next) => {
+export const isAdmin = async (req, res, next) => {
   if (!req.user) {
     var credentials = req.headers.authorization.split(' ')[1];
     var decodedCredentials = Buffer.from(credentials, 'base64').toString();
     var [email, password] = decodedCredentials.split(':');
-  
+
     const user = await userModel.findOne({ email: email });
 
     req.user = user;
@@ -31,7 +31,7 @@ const isAdminOrPremium = async (req, res, next) => {
     var credentials = req.headers.authorization.split(' ')[1];
     var decodedCredentials = Buffer.from(credentials, 'base64').toString();
     var [email, password] = decodedCredentials.split(':');
-  
+
     // Assuming you have retrieved the user object based on the authenticated email
     const user = await userModel.findOne({ email: email });
 
