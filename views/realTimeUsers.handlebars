@@ -1,0 +1,77 @@
+<h1>Users</h1>
+<ul id="usersTemplate">
+    {{#each users.docs }}
+        <li>
+            Name: {{this._doc.first_name}}, {{this._doc.last_name}} -  Role: {{this._doc.role}}
+            <button class="btnSwitchRole" onclick="switchRole('{{this._doc._id}}')">Switch Role</button>
+            <button id="{{this._doc._id}}" class="btnDeleteUser">Delete User</button>
+        </li>
+    {{/each}}
+</ul>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+        const socket = io();
+
+        // Switch Role
+        function switchRole(userId) {
+            fetch(`/api/users/premium/${userId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            })
+            .then(response => {
+            if (response.ok) {
+                return response.json();
+            } else {
+                throw new Error('Error switching role:', response.statusText);
+            }
+            })
+            .then(data => {
+            socket.emit('switchRole')
+            })
+            .catch(error => {
+            console.error('Error switching role:', error);
+            });
+        }
+
+        //delete
+        function activateDeleteButtons() {
+            deleteButtons = document.querySelectorAll('.btnDeleteUser');
+            for (var i = 0; i < deleteButtons.length; i++) {
+                deleteButtons[i]?.addEventListener('click', ev => {
+                    console.log(event.target.id);
+                    const id = event.target.id
+                    socket.emit('deleteProduct', id)
+                });
+            }
+        }
+        activateDeleteButtons();
+
+        //refresh
+        socket.on('actualizar', users => {
+            document.getElementById("productsList").innerHTML = "";
+            let text = "";
+            for (let i = 0; i < users.length; i++) {
+                text = "Name: " + users[i].first_name + ", " + users[i].last_name + "- Role: " + users[i].role;
+                let listItem = document.createElement("LI");
+                listItem.textContent = text;
+                listItem.innerHTML += " <button id='" + users[i]._id + "' class='btnDeleteProd'>Delete User</button>"
+                document.getElementById("usersTemplate").appendChild(listItem);
+            }
+            activateDeleteButtons();
+        })
+
+        socket.on('roleSwitched', userId => {
+  // Implement the code to update the UI based on the "Switch Role" event
+  // For example, you can update the user role in the list without refreshing the page
+  alert(userId);
+const userElement = document.querySelector(`#${userId}`);
+  if (userElement) {
+    // Assuming the role is displayed inside the user element
+    // Update the role text accordingly
+    userElement.innerText = 'New Role'; // Update with the new role text
+  }
+});
+
+</script>

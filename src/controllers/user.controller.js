@@ -1,17 +1,70 @@
 import multer from 'multer';
 import { userDAO, userModel } from '../dao/mongo/models/user.model.js';
+import { sendPasswordRecoveryEmail } from './pw-recovery.controller.js';
+import { webRouter } from './base.controller.js';
 
 export async function controladorUsersGet(request, response) {
   try {
-    let users = await userDAO.getAll();
+    let data = await userDAO.getAll();
     const limit = parseInt(request.query.limit);
-    request.logger.info(users);
+    request.logger.info(data);
+
+    const users = data.docs;
+
     if (limit) {
       users = users.slice(0, limit);
     }
-    response.json(users);
+
+    const basicUserInfo = users.map(user => ({
+      first_name: user.first_name,
+      last_name: user.last_name,
+      email: user.email,
+      role: user.role,
+    }));
+
+    response.json(basicUserInfo);
   } catch (err) {
     request.logger.error(err);
+    response.status(500).json({ error: 'Internal server error.' });
+  }
+}
+
+export async function deleteInactiveUsers(request, response) {
+  try {
+    const twoDaysAgo = new Date();
+    twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+    //twoDaysAgo.setMinutes(twoDaysAgo.getMinutes() - 8);
+
+    const result = await userDAO.getAll();
+    const users = result.docs;
+
+    const deletedUserIds = [];
+    const errors = [];
+
+    for (const user of users) {
+      try {
+        if (user.last_connection instanceof Date || user.last_connection === null) {
+          if (user.last_connection === null || user.last_connection < twoDaysAgo) {
+            await userDAO.delete(user._id);
+            deletedUserIds.push(user._id);
+
+            if (user.last_connection !== null) {
+              const emailSubject = 'Account Deletion Due to Inactivity';
+              const emailBody = `${user.first_name},\n\nYour account has been deleted due to inactivity.`;
+              await sendPasswordRecoveryEmail(user.email, emailSubject, emailBody);
+            }
+          }
+        }
+      } catch (error) {
+        errors.push({ userId: user._id, error: error.message });
+        console.error(`Error deleting user ${user._id}:`, error);
+      }
+    }
+
+    response.json({ message: `${deletedUserIds.length} users deleted successfully.`, errors });
+  } catch (err) {
+    console.error(err);
+    response.status(500).json({ error: 'Internal server error.' });
   }
 }
 
@@ -149,3 +202,17 @@ export const controladorSwitchRole = async (req, res) => {
     res.status(500).json({ error: 'Internal server error.' });
   }
 };
+
+webRouter.get('/users', async (req, res) => {
+  try {
+    let users = await userDAO.getAll();
+
+    const payload = {
+      users: users,
+    };
+
+    res.render('realTimeUsers', payload);
+  } catch (err) {
+    req.logger.debug(err);
+  }
+});

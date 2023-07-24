@@ -8,4 +8,8 @@ export class UserDAO {
   async getAll(query = {}, options) {
     return await this.#db.paginate(query, options);
   }
+
+  async delete(id) {
+    return await this.#db.deleteOne({ _id: id }).lean()
+  }
 }
