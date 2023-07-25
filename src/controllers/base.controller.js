@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { productDAO } from '../dao/mongo/models/product.model.js';
 import { cartDAO } from '../dao/mongo/models/cart.model.js';
 import { messageDAO } from '../dao/mongo/models/message.model.js';
-import { userModel } from '../dao/mongo/models/user.model.js';
+import { userDAO, userModel } from '../dao/mongo/models/user.model.js';
 import { ticketDAO } from '../dao/mongo/models/ticket.model.js';
 import crypto from 'crypto';
 
@@ -180,13 +180,31 @@ webRouter.get('/products', async (req, res) => {
 });
 webRouter.get('/products/:pid', async (req, res) => {
     try {
-        let product = await productDAO.getById(req.params.pid);
-        req.logger.debug(req.params.pid)
-        req.logger.debug(product)
-        // Reemplazar cartId por variable que corresponda al carrito de cada usuario
-        res.render('productDetail', { product, cartId: '64187748029ab3d04621d6ce' });
+        const productId = req.params.pid;
+        const product = await productDAO.getById(productId);
+        const userId = req.user;
+        const user = await userDAO.getById(userId);
+
+        if (user) {
+            // Check if the user already has a cart, get it or create a new cart
+            let cart = user.cart;
+            if (!cart) {
+                // User does not have a cart, create a new one
+                const newCart = await cartDAO.add();
+                cart = newCart._id;
+
+                // Update the user's cart field with the new cart's _id
+                await userDAO.updateUserCart(userId, cart);
+            }
+
+            // Use the cart ID in the response
+            res.render('productDetail', { product, cartId: cart });
+        } else {
+            res.render('productDetail', { product });
+        }
     } catch (err) {
-        req.logger.debug(err);
+        req.logger.error(err);
+        res.status(500).send('Internal Server Error');
     }
 });
 webRouter.get('/carts/:cid', async (req, res) => {
