@@ -37,7 +37,9 @@ export async function controladorAddToCart(request, response) {
     try {
         // await cartDAO.firstTime();
         await cartDAO.addToCart(request.params.cid, { product: request.params.pid }, request);
-        response.status(201).send('Product: ' + request.params.pid + ', added in Cart: ' + request.params.cid);
+        
+        response.status(201);
+        response.redirect('/carts/' + request.params.cid);
     } catch (err) {
         console.log(err);
         request.logger.error(err);
