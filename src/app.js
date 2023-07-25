@@ -38,7 +38,7 @@ io.on('connection', socket => {
     io.sockets.emit('actualizar', products)
   })
 
-  socket.on('deleteProduct', async id => {
+  socket.on('deleteProduct', async ({ id, page }) => {
     try {
       // Find the product by its ID
       const product = await productDAO.getById(id);
@@ -65,13 +65,13 @@ io.on('connection', socket => {
       // Get the updated list of products
       const products = await productDAO.getAll();
 
-      // Emit the updated list of products to all connected clients
-      io.sockets.emit('actualizar', products);
+      // Get the updated list of products with pagination
+      const updatedProducts = await productDAO.getAll({}, { page });
+      io.sockets.emit('actualizar', updatedProducts);
     } catch (err) {
       console.error('Error deleting product:', err);
     }
   });
-
 
   socket.on('nuevoMensaje', async msg => {
     await messageDAO.add(msg)

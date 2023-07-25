@@ -75,28 +75,39 @@ Bienvenid@ {{user.first_name}} {{user.last_name}}! Email: {{user.email}}, Edad: 
 
     //delete
     function activateDeleteButtons() {
-        deleteButtons = document.querySelectorAll('.btnDeleteProd');
-        for (var i = 0; i < deleteButtons.length; i++) {
-            deleteButtons[i]?.addEventListener('click', ev => {
-                console.log(event.target.id);
-                const id = event.target.id
-                socket.emit('deleteProduct', id)
-            });
+        const deleteButtons = document.querySelectorAll('.btnDeleteProd');
+        for (let i = 0; i < deleteButtons.length; i++) {
+        deleteButtons[i]?.addEventListener('click', ev => {
+            const id = event.target.id;
+            // Get the current page parameter from the URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const page = urlParams.get('page');
+            socket.emit('deleteProduct', { id, page });
+        });
         }
     }
     activateDeleteButtons();
 
     //refresh
     socket.on('actualizar', products => {
-        document.getElementById("productsList").innerHTML = "";
-        let text = "";
-        for (let i = 0; i < products.length; i++) {
-            text = products[i].title + ": $" + products[i].price + ", stock: " + products[i].stock;
-            let listItem = document.createElement("LI");
-            listItem.textContent = text;
-            listItem.innerHTML += " <button id='" + products[i].id + "' class='btnDeleteProd'>Delete</button>"
-            document.getElementById("productsList").appendChild(listItem);
-        }
-        activateDeleteButtons();
-    })
+    const productsList = document.getElementById('productsList');
+    productsList.innerHTML = '';
+
+    products.docs.forEach(product => {
+      const listItem = document.createElement('li');
+      listItem.textContent = `${product.title}: $${product.price}, stock: ${product.stock}`;
+
+      const deleteProductButton = document.createElement('button');
+      deleteProductButton.setAttribute('id', product._id);
+      deleteProductButton.setAttribute('class', 'btnDeleteProd');
+      deleteProductButton.textContent = 'Delete';
+      deleteProductButton.addEventListener('click', () => {
+        socket.emit('deleteProduct', product._id);
+      });
+
+      listItem.appendChild(deleteProductButton);
+
+      productsList.appendChild(listItem);
+    });
+  });
 </script>
