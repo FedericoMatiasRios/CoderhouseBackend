@@ -3,15 +3,14 @@ import { cartDAO } from '../dao/mongo/models/cart.model.js';
 // Controladores Carts
 export async function controladorGetAllCarts(request, response) {
     try {
-        let carts = await cartDAO.getAll();
-        const limit = parseInt(request.query.limit);
-        // products = JSON.parse(products);
-        request.logger.info(carts);
-        if (limit) {
-            carts = carts.slice(0, limit);
-        }
+        // Get the 'page' and 'limit' parameters from the query string
+        const page = parseInt(request.query.page) || 1; // Default to page 1 if not specified
+        const limit = parseInt(request.query.limit) || 10; // Default to 10 documents per page if not specified
+
+        // Pass the 'page' and 'limit' parameters to the getAll function as options
+        const carts = await cartDAO.getAll({}, { page, limit });
+
         response.json(carts);
-        // http://127.0.0.1:8080/products?limit=2
     } catch (err) {
         request.logger.error(err);
     }

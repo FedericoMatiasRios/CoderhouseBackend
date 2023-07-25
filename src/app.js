@@ -7,6 +7,7 @@ import { mongodbCnxStr } from './config/config.js'
 import { winstonLogger } from './utils/winstonLogger.js'
 import { userDAO } from './dao/mongo/models/user.model.js'
 import { controladorSwitchRole } from './controllers/user.controller.js'
+import { sendPasswordRecoveryEmail } from './controllers/pw-recovery.controller.js'
 
 await mongoose.connect(mongodbCnxStr, {
   useNewUrlParser: true,
@@ -38,15 +39,39 @@ io.on('connection', socket => {
   })
 
   socket.on('deleteProduct', async id => {
-    // await productDAO.firstTime()
-    // await productDAO.deleteProduct(id)
-    // let products = await productDAO.getProducts();
-    await productDAO.delete(id)
-    let products = await productDAO.getAll();
+    try {
+      // Find the product by its ID
+      const product = await productDAO.getById(id);
 
-    // products = JSON.parse(products)
-    io.sockets.emit('actualizar', products)
-  })
+      if (!product) {
+        console.error('Product not found.');
+        return;
+      }
+
+      // Find the user by the product's owner email
+      const user = await userDAO.getByEmail(product.owner);
+
+      if (user && user.role === 'premium') {
+        // If the product belongs to a premium user, send the deletion email
+        const emailSubject = 'Product Deletion Notification';
+        const emailBody = `The product "${product.title}" has been deleted from your account.`;
+
+        await sendPasswordRecoveryEmail(user.email, emailSubject, emailBody);
+      }
+
+      // Delete the product
+      await productDAO.delete(id);
+
+      // Get the updated list of products
+      const products = await productDAO.getAll();
+
+      // Emit the updated list of products to all connected clients
+      io.sockets.emit('actualizar', products);
+    } catch (err) {
+      console.error('Error deleting product:', err);
+    }
+  });
+
 
   socket.on('nuevoMensaje', async msg => {
     await messageDAO.add(msg)
@@ -55,12 +80,12 @@ io.on('connection', socket => {
     // products = JSON.parse(products)
     io.sockets.emit('actualizarMsg', messages)
   })
-  
+
   socket.on('deleteUser', async id => {
     await userDAO.delete(id)
     let users = await userDAO.getAll();
 
     io.sockets.emit('actualizar', users)
   })
-  
+
 })

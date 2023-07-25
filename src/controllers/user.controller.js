@@ -6,27 +6,27 @@ import { isAdmin } from '../routers/product.router.js';
 
 export async function controladorUsersGet(request, response) {
   try {
-    let data = await userDAO.getAll();
-    const limit = parseInt(request.query.limit);
-    request.logger.info(data);
+      // Get the 'page' and 'limit' parameters from the query string
+      const page = parseInt(request.query.page) || 1; // Default to page 1 if not specified
+      const limit = parseInt(request.query.limit) || 10; // Default to 10 documents per page if not specified
 
-    const users = data.docs;
+      // Pass the 'page' and 'limit' parameters to the getAll function as options
+      const data = await userDAO.getAll({}, { page, limit });
 
-    if (limit) {
-      users = users.slice(0, limit);
-    }
+      const users = data.docs;
 
-    const basicUserInfo = users.map(user => ({
-      first_name: user.first_name,
-      last_name: user.last_name,
-      email: user.email,
-      role: user.role,
-    }));
+      const basicUserInfo = users.map(user => ({
+        first_name: user.first_name,
+        last_name: user.last_name,
+        email: user.email,
+        role: user.role,
+      }));
 
-    response.json(basicUserInfo);
+      response.json(basicUserInfo);
   } catch (err) {
-    request.logger.error(err);
-    response.status(500).json({ error: 'Internal server error.' });
+      request.logger.error(err);
+      response.status(500).json({ error: 'Internal server error.' });
+
   }
 }
 

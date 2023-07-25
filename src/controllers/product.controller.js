@@ -1,18 +1,17 @@
 import { productDAO } from '../dao/mongo/models/product.model.js';
-import { userModel } from '../dao/mongo/models/user.model.js';
+import { userDAO, userModel } from '../dao/mongo/models/user.model.js';
 
 // Controladores Products
 export async function controladorProductsGet(request, response) {
     try {
-        let products = await productDAO.getAll();
-        const limit = parseInt(request.query.limit);
-        // products = JSON.parse(products);
-        request.logger.info(products);
-        if (limit) {
-            products = products.slice(0, limit);
-        }
+        // Get the 'page' and 'limit' parameters from the query string
+        const page = parseInt(request.query.page) || 1; // Default to page 1 if not specified
+        const limit = parseInt(request.query.limit) || 10; // Default to 10 documents per page if not specified
+
+        // Pass the 'page' and 'limit' parameters to the getAll function as options
+        const products = await productDAO.getAll({}, { page, limit });
+
         response.json(products);
-        // http://127.0.0.1:8080/products?limit=2
     } catch (err) {
         request.logger.error(err);
     }
@@ -83,11 +82,32 @@ export async function controladorUpdateProduct(request, response) {
         request.logger.error(err);
     }
 }
+
 export async function controladorDeleteProduct(request, response) {
     try {
-        await productDAO.delete(request.params.pid);
+        const productId = request.params.pid;
+
+        const product = await productDAO.getById(productId);
+
+        if (!product) {
+            return response.status(404).send('Product not found.');
+        }
+
+        const user = await userDAO.getByEmail(product.owner);
+
+        if (user && user.role === 'premium') {
+            const emailSubject = 'Product Deletion Notification';
+            const emailBody = `The product "${product.title}" has been deleted from your account.`;
+
+            await sendPasswordRecoveryEmail(user.email, emailSubject, emailBody);
+        }
+
+        // Delete the product
+        await productDAO.delete(productId);
+
         response.status(201).send('Product deleted!');
     } catch (err) {
-        request.logger.error(err);
+        console.error('Error deleting product:', err);
+        response.status(500).send('Error deleting product.');
     }
 }
