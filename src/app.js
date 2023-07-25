@@ -55,30 +55,11 @@ io.on('connection', socket => {
     // products = JSON.parse(products)
     io.sockets.emit('actualizarMsg', messages)
   })
-
-  socket.on('switchRole', async userId => {
-    try {
-      // Handle the role switch on the server
-      await controladorSwitchRole({ params: { uid: userId } }, {
-        json: (data) => {
-          // After the role switch is successful, emit the 'roleSwitched' event
-          console.log('socket roleSwitched sent');
-          io.sockets.emit('roleSwitched', userId);
-        }
-      });
-    } catch (error) {
-      console.error('Error switching role:', error);
-    }
-  });
   
-  socket.on('deleteProduct', async id => {
-    // await productDAO.firstTime()
-    // await productDAO.deleteProduct(id)
-    // let products = await productDAO.getProducts();
+  socket.on('deleteUser', async id => {
     await userDAO.delete(id)
     let users = await userDAO.getAll();
 
-    // products = JSON.parse(products)
     io.sockets.emit('actualizar', users)
   })
   

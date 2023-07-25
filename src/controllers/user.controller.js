@@ -2,6 +2,7 @@ import multer from 'multer';
 import { userDAO, userModel } from '../dao/mongo/models/user.model.js';
 import { sendPasswordRecoveryEmail } from './pw-recovery.controller.js';
 import { webRouter } from './base.controller.js';
+import { isAdmin } from '../routers/product.router.js';
 
 export async function controladorUsersGet(request, response) {
   try {
@@ -170,7 +171,7 @@ export const controladorUploadDocuments = async (req, res) => {
 
 export const controladorSwitchRole = async (req, res) => {
   const userId = req.params.uid;
-
+  console.log('user id is ===========', userId)
   try {
     const user = await userModel.findById(userId);
     const requiredDocuments = ['identification', 'proofOfAddress', 'accountStatement'];
@@ -184,12 +185,15 @@ export const controladorSwitchRole = async (req, res) => {
     console.log('user role is: ', user.role);
 
     if (!isAllDocumentsUploaded && user.role == 'user') {
+      console.log('is giving error');
       return res.status(404).json({ error: 'Some required documents have not been uploaded.' });
     }
 
     if (user.role === 'user') {
+      console.log('is here');
       user.role = 'premium';
     } else if (user.role === 'premium') {
+      console.log('no, here');
       user.role = 'user';
     }
 
@@ -203,7 +207,7 @@ export const controladorSwitchRole = async (req, res) => {
   }
 };
 
-webRouter.get('/users', async (req, res) => {
+webRouter.get('/users', isAdmin, async (req, res) => {
   try {
     let users = await userDAO.getAll();
 
