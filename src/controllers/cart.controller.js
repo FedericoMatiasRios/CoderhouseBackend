@@ -41,7 +41,6 @@ export async function controladorAddToCart(request, response) {
         response.status(201);
         response.redirect('/carts/' + request.params.cid);
     } catch (err) {
-        console.log(err);
         request.logger.error(err);
     }
 }

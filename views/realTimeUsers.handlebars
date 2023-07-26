@@ -38,7 +38,6 @@
             deleteButtons = document.querySelectorAll('.btnDeleteUser');
             for (var i = 0; i < deleteButtons.length; i++) {
                 deleteButtons[i]?.addEventListener('click', ev => {
-                    console.log(event.target.id);
                     const id = event.target.id
                     socket.emit('deleteUser', id)
                 });
@@ -50,7 +49,6 @@
         socket.on('actualizar', users => {
             document.getElementById("usersTemplate").innerHTML = "";
             let text = "";
-            console.log(users)
             users = users.docs
             for (let i = 0; i < users.length; i++) {
                 text = "Name: " + users[i].first_name + ", " + users[i].last_name + " - Role: " + users[i].role;

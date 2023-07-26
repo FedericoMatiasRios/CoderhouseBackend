@@ -257,7 +257,7 @@ export async function forgotPost(req, res) {
 
         // Send the password recovery email
         await sendPasswordRecoveryEmail(email, emailSubject, emailBody);
-        console.log('after recovery send');
+
         req.flash('success', 'Password recovery email sent');
         res.redirect('/forgot-password');
 

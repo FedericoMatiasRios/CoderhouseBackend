@@ -171,7 +171,6 @@ export const controladorUploadDocuments = async (req, res) => {
 
 export const controladorSwitchRole = async (req, res) => {
   const userId = req.params.uid;
-  console.log('user id is ===========', userId)
   try {
     const user = await userModel.findById(userId);
     const requiredDocuments = ['identification', 'proofOfAddress', 'accountStatement'];
@@ -182,18 +181,13 @@ export const controladorSwitchRole = async (req, res) => {
       return res.status(404).json({ error: 'User not found.' });
     }
 
-    console.log('user role is: ', user.role);
-
     if (!isAllDocumentsUploaded && user.role == 'user') {
-      console.log('is giving error');
       return res.status(404).json({ error: 'Some required documents have not been uploaded.' });
     }
 
     if (user.role === 'user') {
-      console.log('is here');
       user.role = 'premium';
     } else if (user.role === 'premium') {
-      console.log('no, here');
       user.role = 'user';
     }
 
