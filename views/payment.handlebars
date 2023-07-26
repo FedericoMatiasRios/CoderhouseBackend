@@ -1,6 +1,8 @@
 <script src="https://js.stripe.com/v3/"></script>
 <script>const stripe = Stripe('pk_test_51NXosqEFQ3BHnkcGYIyYubWHExFvopF4HI8q7yIYlbhr2Yf1EyZ7SWKgVMQDwF0VM8QiG7amyZLfrjPjyRkvijIt00aA1rx1hP');</script>
-<form id="payment-form" action="/process-payment" method="POST">
+<form id="payment-form"
+      action="/process-payment/{{cart._id}}"
+      method="post">
   <div class="form-row">
     <label for="card-element">Credit or debit card</label>
     <div id="card-element">
@@ -28,4 +30,27 @@
     }
     });
 
+    const form = document.getElementById('payment-form');
+
+    form.addEventListener('submit', async function(event) {
+    event.preventDefault();
+
+    const { token, error } = await stripe.createToken(cardElement);
+
+    if (error) {
+      const displayError = document.getElementById('card-errors');
+      displayError.textContent = error.message;
+    } else {
+      // Set the token value in the hidden input field
+      const hiddenInput = document.createElement('input');
+      hiddenInput.type = 'hidden';
+      hiddenInput.name = 'token';
+      hiddenInput.value = token.id;
+      form.appendChild(hiddenInput);
+
+      // Submit the form to the backend
+      form.submit();
+    }
+
+  });
 </script>

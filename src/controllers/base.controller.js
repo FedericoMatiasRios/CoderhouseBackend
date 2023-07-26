@@ -216,8 +216,8 @@ webRouter.get('/carts/:cid', async (req, res) => {
         req.logger.debug(err);
     }
 });
-
-webRouter.post('/carts/:cid/purchase', async (req, res) => {
+// Este código de ticket se unificó con Stripe en services
+/* webRouter.post('/carts/:cid/purchase', async (req, res) => {
 
     const cid = req.params.cid;
 
@@ -277,6 +277,6 @@ webRouter.post('/carts/:cid/purchase', async (req, res) => {
     } catch (error) {
         return res.status(500).json({ message: 'Internal server error' });
     }
-});
+}); */
 //export const productDAO = new ProductDAO('./database/products.json');
 //const cartDAO = new CartDAO('./database/carts.json');
