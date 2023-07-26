@@ -38,7 +38,7 @@ webRouter.get('/', async (req, res) => {
         let user = null;
 
         if (userId) {
-            user = await userModel.findById(userId).lean();
+            user = await userModel.findById(userId).populate('cart').lean();
         }
 
         const payload = {

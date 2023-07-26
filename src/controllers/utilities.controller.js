@@ -3,6 +3,8 @@ import bcrypt from 'bcrypt';
 import { userModel } from "../dao/mongo/models/user.model.js";
 import winston from "winston";
 import { winstonLogger } from '../utils/winstonLogger.js';
+import { webRouter } from './base.controller.js';
+import { cartDAO } from '../dao/mongo/models/cart.model.js';
 
 export const setDefaultUserId = (req, res, next) => {
   if (!req.session) {
@@ -90,3 +92,14 @@ export const requireAuth = async (req, res, next) => {
 
   return next();
 };
+
+webRouter.get('/payment/:cid', async (req, res) => {
+  try {
+    const cart = await cartDAO.getById(req.params.cid);
+    req.logger.debug(cart);
+    res.render('payment', { cart });
+  } catch (err) {
+    req.logger.debug(err);
+    res.status(500).send('An error occurred');
+  }
+});

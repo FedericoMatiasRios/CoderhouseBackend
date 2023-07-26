@@ -1,0 +1,31 @@
+<script src="https://js.stripe.com/v3/"></script>
+<script>const stripe = Stripe('pk_test_51NXosqEFQ3BHnkcGYIyYubWHExFvopF4HI8q7yIYlbhr2Yf1EyZ7SWKgVMQDwF0VM8QiG7amyZLfrjPjyRkvijIt00aA1rx1hP');</script>
+<form id="payment-form" action="/process-payment" method="POST">
+  <div class="form-row">
+    <label for="card-element">Credit or debit card</label>
+    <div id="card-element">
+      <!-- A Stripe Element will be inserted here. -->
+    </div>
+    <!-- Used to display Element errors. -->
+    <div id="card-errors" role="alert"></div>
+  </div>
+  <button type="submit">Submit Payment</button>
+</form>
+<script>
+    const elements = stripe.elements();
+    const cardElement = elements.create('card');
+
+    cardElement.mount('#card-element');
+
+    cardElement.addEventListener('change', function(event) {
+
+    const displayError = document.getElementById('card-errors');
+
+    if (event.error) {
+        displayError.textContent = event.error.message;
+    } else {
+        displayError.textContent = '';
+    }
+    });
+
+</script>

@@ -1,27 +1,34 @@
-{{#if user}}
-Bienvenid@ {{user.first_name}} {{user.last_name}}! Email: {{user.email}}, Edad: {{user.age}}, Rol: {{user.role}}.
-<br>
-<a href="./logout">Logout</a>
+{{#if user }}
+  Bienvenid@ {{user.first_name}} {{user.last_name}}! Email: {{user.email}}, Edad: {{user.age}}, Rol: {{user.role}}.
+  <br>
+  <a href="./logout">Logout</a>
+{{/if}}
+
+{{#if user.cart }}
+  - 
+  <a href="./carts/{{user.cart._id}}">My Cart</a>
 {{/if}}
 
 <h1>Products</h1>
-{{#if hayProductos}}
-<ul>
-  {{#each products.docs}}
-
-  <li>{{this.title}}: ${{this.price}}, stock: {{this.stock}} <a href="./products/{{this._id}}">Ver Producto</a></li>
-  {{/each}}
-</ul>
-
-{{!-- pagination --}}
-Total pages: {{totalPages}} <br>
-Current page: {{page}} <br>
-{{#if products.hasPrevPage}}
-<a href="{{prevLink}}">Prev Page</a>
-{{/if}}
-{{#if products.hasNextPage}}
-<a href="{{nextLink}}">Next Page</a>
-{{/if}}
+{{#if hayProductos }}
+  <ul>
+    {{#each products.docs }}
+      <li>
+        {{this.title}}: ${{this.price}}, stock: {{this.stock}} <a href="./products/{{this._id}}">Ver Producto</a>
+      </li>
+    {{/each}}
+  </ul>
+  {{!-- pagination --}}
+  Total pages: {{totalPages}}
+  <br>
+  Current page: {{page}}
+  <br>
+  {{#if products.hasPrevPage }}
+    <a href="{{prevLink}}">Prev Page</a>
+  {{/if}}
+  {{#if products.hasNextPage }}
+    <a href="{{nextLink}}">Next Page</a>
+  {{/if}}
 {{else}}
-<p>No hay productos disponibles</p>
+  <p>No hay productos disponibles</p>
 {{/if}}

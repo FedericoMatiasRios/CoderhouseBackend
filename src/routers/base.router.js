@@ -12,8 +12,11 @@ import { logger } from '../middlewares/logger.middleware.js';
 import { errorHandlerMiddleware } from '../middlewares/errors.middleware.js';
 import swaggerJSDoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
+import cors from 'cors';
 
 export const app = express()
+
+app.use(cors());
 
 const options = {
     definition: {
@@ -28,26 +31,12 @@ const options = {
 const specs = swaggerJSDoc(options)
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs))
 
-
 app.use(compression({ brotli: { enabled: true, zlib: {} } }));
 app.use(cookieParser(palabraSecreta));
 
 app.use(logger);
 
 app.use(errorHandlerMiddleware);
-
-/* app.use((error, req, res, next) => {
-    if (error instanceof NotFoundError)
-        res.status(404)
-    else if (error instanceof InvalidArgumentError)
-        res.status(400)
-    else
-        res.status(500)
-    res.json({
-        status: 'error',
-        description: error.message ?? 'Error interno: causa desconocida  '
-    })
-}); */
 
 // configure handlebars engine
 app.engine('handlebars', engine());

@@ -12,6 +12,6 @@
     <br>
   {{/each}}
 </ul>
-<form method="POST" action="/carts/{{cart._id}}/purchase">
-  <button type="submit">Purchase</button>
-</form>
+<a href="../payment/{{cart._id}}">
+<button type="submit">Purchase</button>
+</a>
