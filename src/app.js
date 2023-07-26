@@ -3,7 +3,7 @@ import { productDAO } from './dao/mongo/models/product.model.js'
 import { app } from './routers/base.router.js'
 import { mongoose } from 'mongoose'
 import { messageDAO } from './dao/mongo/models/message.model.js'
-import { mongodbCnxStr } from './config/config.js'
+import { mongodbCnxStr, port } from './config/config.js'
 import { winstonLogger } from './utils/winstonLogger.js'
 import { userDAO } from './dao/mongo/models/user.model.js'
 import { controladorSwitchRole } from './controllers/user.controller.js'
@@ -19,8 +19,7 @@ await mongoose.connect(mongodbCnxStr, {
   })
   .catch(err => winstonLogger.error(err));
 
-const puerto = 8080
-const servidorConectado = app.listen(puerto, () => { winstonLogger.info('Connected.') })
+const servidorConectado = app.listen(port, "0.0.0.0", () => { winstonLogger.info('Connected.') })
 
 const io = new Server(servidorConectado)
 io.on('connection', socket => {
